@@ -15,7 +15,6 @@
 <body>
 <div id="root"></div>
 <script>
-import { jsxDEV as _jsxDEV, Fragment as _Fragment } from "react/jsx-dev-runtime";
 const {
   useState,
   useEffect,
@@ -416,15 +415,14 @@ Bien cordialement,`;
     URL.revokeObjectURL(url);
   }
   const stagiairesEnAlerte = recap.filter(r => r.pctAIAnnuel >= SEUIL_ALERTE_PCT);
-  return /*#__PURE__*/_jsxDEV("div", {
+  return /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'Inter', -apple-system, sans-serif",
       background: "#F7F5F0",
       minHeight: "100%",
       color: "#2C2E2B"
-    },
-    children: [/*#__PURE__*/_jsxDEV("style", {
-      children: `
+    }
+  }, /*#__PURE__*/React.createElement("style", null, `
         .pf { font-family: 'Playfair Display', serif; }
         * { box-sizing: border-box; }
         button { cursor: pointer; font-family: inherit; }
@@ -434,1610 +432,1434 @@ Bien cordialement,`;
           .print-only-block { display: block !important; }
           body { background: #fff !important; }
         }
-      `
-    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-      className: "no-print",
+      `), /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      background: "#3A4A35",
+      color: "#F7F5F0",
+      padding: "20px 24px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      opacity: 0.7,
+      marginBottom: 4
+    }
+  }, "IRFBB Hauts-de-France"), /*#__PURE__*/React.createElement("h1", {
+    className: "pf",
+    style: {
+      margin: 0,
+      fontSize: 24,
+      fontWeight: 700
+    }
+  }, "Assiduité - BPJEPS Saint-Quentin"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      opacity: 0.75,
+      marginTop: 4
+    }
+  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires")), /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      display: "flex",
+      gap: 4,
+      padding: "12px 24px 0",
+      background: "#F7F5F0",
+      borderBottom: "1px solid #E3DDD1"
+    }
+  }, [{
+    id: "presence",
+    label: "État des présences",
+    icon: "📅"
+  }, {
+    id: "recap",
+    label: "Récapitulatif",
+    icon: "📊"
+  }, {
+    id: "contacts",
+    label: "Notifications",
+    icon: "✉️"
+  }].map(t => {
+    const active = tab === t.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: t.id,
+      onClick: () => setTab(t.id),
       style: {
-        background: "#3A4A35",
-        color: "#F7F5F0",
-        padding: "20px 24px"
-      },
-      children: [/*#__PURE__*/_jsxDEV("div", {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "10px 16px",
+        border: "none",
+        background: "transparent",
+        borderBottom: active ? "2px solid #6B8068" : "2px solid transparent",
+        color: active ? "#3A4A35" : "#8A8577",
+        fontWeight: active ? 600 : 500,
+        fontSize: 14
+      }
+    }, t.icon, " ", t.label);
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 24
+    }
+  }, tab === "presence" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 16,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setViewMode("grille"),
+    style: {
+      padding: "7px 14px",
+      borderRadius: 8,
+      fontSize: 13,
+      fontWeight: 600,
+      border: viewMode === "grille" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+      background: viewMode === "grille" ? "#E9EFE6" : "#fff",
+      color: viewMode === "grille" ? "#4A6741" : "#8A8577"
+    }
+  }, "Vue grille"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setViewMode("jour"),
+    style: {
+      padding: "7px 14px",
+      borderRadius: 8,
+      fontSize: 13,
+      fontWeight: 600,
+      border: viewMode === "jour" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+      background: viewMode === "jour" ? "#E9EFE6" : "#fff",
+      color: viewMode === "jour" ? "#4A6741" : "#8A8577"
+    }
+  }, "Vue par jour"), viewMode === "grille" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 1,
+      height: 20,
+      background: "#E3DDD1",
+      margin: "0 4px"
+    }
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "Du"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: gridRange.from,
+    min: DATES[0],
+    max: gridRange.to,
+    onChange: e => setGridRange(r => ({
+      ...r,
+      from: e.target.value
+    })),
+    style: {
+      padding: "6px 8px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "au"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: gridRange.to,
+    min: gridRange.from,
+    max: DATES[DATES.length - 1],
+    onChange: e => setGridRange(r => ({
+      ...r,
+      to: e.target.value
+    })),
+    style: {
+      padding: "6px 8px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setGridRange(defaultGridRange()),
+    style: {
+      fontSize: 12,
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      color: "#8A8577"
+    }
+  }, "30j / +15j"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setGridRange({
+      from: DATES[0],
+      to: DATES[DATES.length - 1]
+    }),
+    style: {
+      fontSize: 12,
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      color: "#8A8577"
+    }
+  }, "Année complète"))), viewMode === "grille" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      overflow: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      borderCollapse: "collapse",
+      fontSize: 12,
+      minWidth: "100%"
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    style: {
+      position: "sticky",
+      left: 0,
+      background: "#3A4A35",
+      color: "#fff",
+      padding: "8px 10px",
+      textAlign: "left",
+      zIndex: 2,
+      minWidth: 130
+    }
+  }, "Date / créneau"), STAGIAIRES.map(st => /*#__PURE__*/React.createElement("th", {
+    key: st.id,
+    style: {
+      background: "#3A4A35",
+      color: "#fff",
+      padding: "8px 8px",
+      fontWeight: 600,
+      minWidth: 100,
+      textAlign: "center"
+    }
+  }, st.nom, /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 400,
+      opacity: 0.8
+    }
+  }, st.prenom))))), /*#__PURE__*/React.createElement("tbody", null, gridSlots.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: STAGIAIRES.length + 1,
+    style: {
+      padding: 20,
+      textAlign: "center",
+      color: "#8A8577",
+      fontSize: 13
+    }
+  }, "Aucun créneau de formation sur cette période.")), gridSlots.map((slot, ri) => {
+    const striped = weekStripe[`${slot.date}_${slot.creneau}`];
+    const rowBg = striped ? "#F3F1E9" : "#fff";
+    return /*#__PURE__*/React.createElement("tr", {
+      key: ri,
+      style: {
+        borderTop: "1px solid #F0EEE6",
+        background: rowBg
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        position: "sticky",
+        left: 0,
+        background: rowBg,
+        padding: "6px 10px",
+        fontWeight: 500,
+        whiteSpace: "nowrap",
+        borderRight: "1px solid #F0EEE6"
+      }
+    }, formatDateShort(slot.date), " ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        fontWeight: 700,
+        background: "#F0EEE6",
+        padding: "1px 5px",
+        borderRadius: 8,
+        marginLeft: 4
+      }
+    }, slot.creneau), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "#8A8577"
+      }
+    }, slot.modalite, " · ", slot.heures, "h")), STAGIAIRES.map(st => {
+      const contrat = contrats[st.id] || {
+        dateEntree: st.dateEntree,
+        dateFin: ""
+      };
+      const notYet = slot.date < contrat.dateEntree || contrat.dateFin && slot.date > contrat.dateFin;
+      const entry = getEntry(st.id, slot.date, slot.creneau);
+      const sStyle = STATUT_STYLE[entry.statut];
+      if (notYet) {
+        return /*#__PURE__*/React.createElement("td", {
+          key: st.id,
+          style: {
+            padding: "4px 6px",
+            textAlign: "center",
+            color: "#C6C2B6",
+            fontSize: 11
+          }
+        }, "—");
+      }
+      return /*#__PURE__*/React.createElement("td", {
+        key: st.id,
+        style: {
+          padding: "4px 6px",
+          textAlign: "center"
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 3,
+          justifyContent: "center"
+        }
+      }, /*#__PURE__*/React.createElement("select", {
+        value: entry.statut,
+        onChange: e => setStatut(st.id, slot.date, slot.creneau, e.target.value),
         style: {
           fontSize: 11,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          opacity: 0.7,
-          marginBottom: 4
-        },
-        children: "IRFBB Hauts-de-France"
-      }, void 0, false), /*#__PURE__*/_jsxDEV("h1", {
-        className: "pf",
+          padding: "4px 3px",
+          borderRadius: 6,
+          border: `1px solid ${sStyle.dot}`,
+          background: sStyle.bg,
+          color: sStyle.fg,
+          fontWeight: 600,
+          width: 92
+        }
+      }, STATUTS.map(s => /*#__PURE__*/React.createElement("option", {
+        key: s,
+        value: s
+      }, s))), /*#__PURE__*/React.createElement("button", {
+        onClick: () => setCommentModal({
+          stagId: st.id,
+          date: slot.date,
+          creneau: slot.creneau,
+          text: entry.commentaire
+        }),
+        title: entry.commentaire ? entry.commentaire : "Ajouter un commentaire",
         style: {
-          margin: 0,
-          fontSize: 24,
-          fontWeight: 700
-        },
-        children: "Assiduité - BPJEPS Saint-Quentin"
-      }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-        style: {
-          fontSize: 13,
-          opacity: 0.75,
-          marginTop: 4
-        },
-        children: ["Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"]
-      }, void 0, true)]
-    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-      className: "no-print",
+          width: 18,
+          height: 18,
+          borderRadius: 4,
+          border: "1px solid #E3DDD1",
+          background: entry.commentaire ? "#3A4A35" : "#fff",
+          color: entry.commentaire ? "#fff" : "#C6C2B6",
+          fontSize: 10,
+          lineHeight: "16px",
+          padding: 0,
+          flexShrink: 0
+        }
+      }, "✎")));
+    }));
+  })))), viewMode === "jour" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDateIdx(i => Math.max(0, i - 1)),
+    disabled: dateIdx === 0,
+    style: {
+      width: 36,
+      height: 36,
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      opacity: dateIdx === 0 ? 0.4 : 1
+    }
+  }, "‹"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pf",
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      textTransform: "capitalize"
+    }
+  }, formatDateLong(currentDate)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginTop: 2
+    }
+  }, "Période ", slotsForDay[0] && slotsForDay[0].periode, " · ", dateIdx + 1, " / ", DATES.length, " jours de formation")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDateIdx(i => Math.min(DATES.length - 1, i + 1)),
+    disabled: dateIdx === DATES.length - 1,
+    style: {
+      width: 36,
+      height: 36,
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      opacity: dateIdx === DATES.length - 1 ? 0.4 : 1
+    }
+  }, "›"), /*#__PURE__*/React.createElement("select", {
+    value: currentDate,
+    onChange: e => setDateIdx(DATES.indexOf(e.target.value)),
+    style: {
+      marginLeft: 8,
+      padding: "8px 10px",
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      fontSize: 13
+    }
+  }, DATES.map(d => /*#__PURE__*/React.createElement("option", {
+    key: d,
+    value: d
+  }, formatDateShort(d)))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDateIdx(defaultDateIdx),
+    style: {
+      padding: "8px 12px",
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "Aujourd'hui")), slotsForDay.map((slot, si) => /*#__PURE__*/React.createElement("div", {
+    key: si,
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      background: "#3A4A35",
+      color: "#fff",
+      padding: "3px 9px",
+      borderRadius: 12
+    }
+  }, slot.creneau), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#4A4A42"
+    }
+  }, slot.modalite), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "· ", slot.heures, "h")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      overflow: "hidden"
+    }
+  }, STAGIAIRES.map((st, i) => {
+    const contrat = contrats[st.id] || {
+      dateEntree: st.dateEntree,
+      dateFin: ""
+    };
+    const notYet = slot.date < contrat.dateEntree || contrat.dateFin && slot.date > contrat.dateFin;
+    const entry = getEntry(st.id, slot.date, slot.creneau);
+    return /*#__PURE__*/React.createElement("div", {
+      key: st.id,
       style: {
-        display: "flex",
-        gap: 4,
-        padding: "12px 24px 0",
-        background: "#F7F5F0",
-        borderBottom: "1px solid #E3DDD1"
-      },
-      children: [{
-        id: "presence",
-        label: "État des présences",
-        icon: "📅"
-      }, {
-        id: "recap",
-        label: "Récapitulatif",
-        icon: "📊"
-      }, {
-        id: "contacts",
-        label: "Notifications",
-        icon: "✉️"
-      }].map(t => {
-        const active = tab === t.id;
-        return /*#__PURE__*/_jsxDEV("button", {
-          onClick: () => setTab(t.id),
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "10px 16px",
-            border: "none",
-            background: "transparent",
-            borderBottom: active ? "2px solid #6B8068" : "2px solid transparent",
-            color: active ? "#3A4A35" : "#8A8577",
-            fontWeight: active ? 600 : 500,
-            fontSize: 14
-          },
-          children: [t.icon, " ", t.label]
-        }, t.id, true);
-      })
-    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-      style: {
-        padding: 24
-      },
-      children: [tab === "presence" && /*#__PURE__*/_jsxDEV("div", {
-        children: [/*#__PURE__*/_jsxDEV("div", {
-          className: "no-print",
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 16,
-            flexWrap: "wrap"
-          },
-          children: [/*#__PURE__*/_jsxDEV("button", {
-            onClick: () => setViewMode("grille"),
-            style: {
-              padding: "7px 14px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              border: viewMode === "grille" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
-              background: viewMode === "grille" ? "#E9EFE6" : "#fff",
-              color: viewMode === "grille" ? "#4A6741" : "#8A8577"
-            },
-            children: "Vue grille"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-            onClick: () => setViewMode("jour"),
-            style: {
-              padding: "7px 14px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              border: viewMode === "jour" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
-              background: viewMode === "jour" ? "#E9EFE6" : "#fff",
-              color: viewMode === "jour" ? "#4A6741" : "#8A8577"
-            },
-            children: "Vue par jour"
-          }, void 0, false), viewMode === "grille" && /*#__PURE__*/_jsxDEV(_Fragment, {
-            children: [/*#__PURE__*/_jsxDEV("span", {
-              style: {
-                width: 1,
-                height: 20,
-                background: "#E3DDD1",
-                margin: "0 4px"
-              }
-            }, void 0, false), /*#__PURE__*/_jsxDEV("label", {
-              style: {
-                fontSize: 12,
-                color: "#8A8577"
-              },
-              children: "Du"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-              type: "date",
-              value: gridRange.from,
-              min: DATES[0],
-              max: gridRange.to,
-              onChange: e => setGridRange(r => ({
-                ...r,
-                from: e.target.value
-              })),
-              style: {
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                fontSize: 12
-              }
-            }, void 0, false), /*#__PURE__*/_jsxDEV("label", {
-              style: {
-                fontSize: 12,
-                color: "#8A8577"
-              },
-              children: "au"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-              type: "date",
-              value: gridRange.to,
-              min: gridRange.from,
-              max: DATES[DATES.length - 1],
-              onChange: e => setGridRange(r => ({
-                ...r,
-                to: e.target.value
-              })),
-              style: {
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                fontSize: 12
-              }
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setGridRange(defaultGridRange()),
-              style: {
-                fontSize: 12,
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                color: "#8A8577"
-              },
-              children: "30j / +15j"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setGridRange({
-                from: DATES[0],
-                to: DATES[DATES.length - 1]
-              }),
-              style: {
-                fontSize: 12,
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                color: "#8A8577"
-              },
-              children: "Année complète"
-            }, void 0, false)]
-          }, void 0, true)]
-        }, void 0, true), viewMode === "grille" && /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #E3DDD1",
-            overflow: "auto"
-          },
-          children: /*#__PURE__*/_jsxDEV("table", {
-            style: {
-              borderCollapse: "collapse",
-              fontSize: 12,
-              minWidth: "100%"
-            },
-            children: [/*#__PURE__*/_jsxDEV("thead", {
-              children: /*#__PURE__*/_jsxDEV("tr", {
-                children: [/*#__PURE__*/_jsxDEV("th", {
-                  style: {
-                    position: "sticky",
-                    left: 0,
-                    background: "#3A4A35",
-                    color: "#fff",
-                    padding: "8px 10px",
-                    textAlign: "left",
-                    zIndex: 2,
-                    minWidth: 130
-                  },
-                  children: "Date / créneau"
-                }, void 0, false), STAGIAIRES.map(st => /*#__PURE__*/_jsxDEV("th", {
-                  style: {
-                    background: "#3A4A35",
-                    color: "#fff",
-                    padding: "8px 8px",
-                    fontWeight: 600,
-                    minWidth: 100,
-                    textAlign: "center"
-                  },
-                  children: [st.nom, /*#__PURE__*/_jsxDEV("br", {}, void 0, false), /*#__PURE__*/_jsxDEV("span", {
-                    style: {
-                      fontWeight: 400,
-                      opacity: 0.8
-                    },
-                    children: st.prenom
-                  }, void 0, false)]
-                }, st.id, true))]
-              }, void 0, true)
-            }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
-              children: [gridSlots.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
-                children: /*#__PURE__*/_jsxDEV("td", {
-                  colSpan: STAGIAIRES.length + 1,
-                  style: {
-                    padding: 20,
-                    textAlign: "center",
-                    color: "#8A8577",
-                    fontSize: 13
-                  },
-                  children: "Aucun créneau de formation sur cette période."
-                }, void 0, false)
-              }, void 0, false), gridSlots.map((slot, ri) => {
-                const striped = weekStripe[`${slot.date}_${slot.creneau}`];
-                const rowBg = striped ? "#F3F1E9" : "#fff";
-                return /*#__PURE__*/_jsxDEV("tr", {
-                  style: {
-                    borderTop: "1px solid #F0EEE6",
-                    background: rowBg
-                  },
-                  children: [/*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      position: "sticky",
-                      left: 0,
-                      background: rowBg,
-                      padding: "6px 10px",
-                      fontWeight: 500,
-                      whiteSpace: "nowrap",
-                      borderRight: "1px solid #F0EEE6"
-                    },
-                    children: [formatDateShort(slot.date), " ", /*#__PURE__*/_jsxDEV("span", {
-                      style: {
-                        fontSize: 10,
-                        fontWeight: 700,
-                        background: "#F0EEE6",
-                        padding: "1px 5px",
-                        borderRadius: 8,
-                        marginLeft: 4
-                      },
-                      children: slot.creneau
-                    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-                      style: {
-                        fontSize: 10,
-                        color: "#8A8577"
-                      },
-                      children: [slot.modalite, " · ", slot.heures, "h"]
-                    }, void 0, true)]
-                  }, void 0, true), STAGIAIRES.map(st => {
-                    const contrat = contrats[st.id] || {
-                      dateEntree: st.dateEntree,
-                      dateFin: ""
-                    };
-                    const notYet = slot.date < contrat.dateEntree || contrat.dateFin && slot.date > contrat.dateFin;
-                    const entry = getEntry(st.id, slot.date, slot.creneau);
-                    const sStyle = STATUT_STYLE[entry.statut];
-                    if (notYet) {
-                      return /*#__PURE__*/_jsxDEV("td", {
-                        style: {
-                          padding: "4px 6px",
-                          textAlign: "center",
-                          color: "#C6C2B6",
-                          fontSize: 11
-                        },
-                        children: "—"
-                      }, st.id, false);
-                    }
-                    return /*#__PURE__*/_jsxDEV("td", {
-                      style: {
-                        padding: "4px 6px",
-                        textAlign: "center"
-                      },
-                      children: /*#__PURE__*/_jsxDEV("div", {
-                        style: {
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 3,
-                          justifyContent: "center"
-                        },
-                        children: [/*#__PURE__*/_jsxDEV("select", {
-                          value: entry.statut,
-                          onChange: e => setStatut(st.id, slot.date, slot.creneau, e.target.value),
-                          style: {
-                            fontSize: 11,
-                            padding: "4px 3px",
-                            borderRadius: 6,
-                            border: `1px solid ${sStyle.dot}`,
-                            background: sStyle.bg,
-                            color: sStyle.fg,
-                            fontWeight: 600,
-                            width: 92
-                          },
-                          children: STATUTS.map(s => /*#__PURE__*/_jsxDEV("option", {
-                            value: s,
-                            children: s
-                          }, s, false))
-                        }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-                          onClick: () => setCommentModal({
-                            stagId: st.id,
-                            date: slot.date,
-                            creneau: slot.creneau,
-                            text: entry.commentaire
-                          }),
-                          title: entry.commentaire ? entry.commentaire : "Ajouter un commentaire",
-                          style: {
-                            width: 18,
-                            height: 18,
-                            borderRadius: 4,
-                            border: "1px solid #E3DDD1",
-                            background: entry.commentaire ? "#3A4A35" : "#fff",
-                            color: entry.commentaire ? "#fff" : "#C6C2B6",
-                            fontSize: 10,
-                            lineHeight: "16px",
-                            padding: 0,
-                            flexShrink: 0
-                          },
-                          children: "✎"
-                        }, void 0, false)]
-                      }, void 0, true)
-                    }, st.id, false);
-                  })]
-                }, ri, true);
-              })]
-            }, void 0, true)]
-          }, void 0, true)
-        }, void 0, false), viewMode === "jour" && /*#__PURE__*/_jsxDEV("div", {
-          children: [/*#__PURE__*/_jsxDEV("div", {
-            className: "no-print",
-            style: {
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 20
-            },
-            children: [/*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setDateIdx(i => Math.max(0, i - 1)),
-              disabled: dateIdx === 0,
-              style: {
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: dateIdx === 0 ? 0.4 : 1
-              },
-              children: "‹"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-              style: {
-                flex: 1,
-                textAlign: "center"
-              },
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                className: "pf",
-                style: {
-                  fontSize: 19,
-                  fontWeight: 700,
-                  textTransform: "capitalize"
-                },
-                children: formatDateLong(currentDate)
-              }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  fontSize: 12,
-                  color: "#8A8577",
-                  marginTop: 2
-                },
-                children: ["Période ", slotsForDay[0] && slotsForDay[0].periode, " · ", dateIdx + 1, " / ", DATES.length, " jours de formation"]
-              }, void 0, true)]
-            }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setDateIdx(i => Math.min(DATES.length - 1, i + 1)),
-              disabled: dateIdx === DATES.length - 1,
-              style: {
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: dateIdx === DATES.length - 1 ? 0.4 : 1
-              },
-              children: "›"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("select", {
-              value: currentDate,
-              onChange: e => setDateIdx(DATES.indexOf(e.target.value)),
-              style: {
-                marginLeft: 8,
-                padding: "8px 10px",
-                borderRadius: 8,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                fontSize: 13
-              },
-              children: DATES.map(d => /*#__PURE__*/_jsxDEV("option", {
-                value: d,
-                children: formatDateShort(d)
-              }, d, false))
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setDateIdx(defaultDateIdx),
-              style: {
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                fontSize: 12,
-                color: "#8A8577"
-              },
-              children: "Aujourd'hui"
-            }, void 0, false)]
-          }, void 0, true), slotsForDay.map((slot, si) => /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              marginBottom: 20
-            },
-            children: [/*#__PURE__*/_jsxDEV("div", {
-              style: {
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 8
-              },
-              children: [/*#__PURE__*/_jsxDEV("span", {
-                style: {
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: "#3A4A35",
-                  color: "#fff",
-                  padding: "3px 9px",
-                  borderRadius: 12
-                },
-                children: slot.creneau
-              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
-                style: {
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#4A4A42"
-                },
-                children: slot.modalite
-              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
-                style: {
-                  fontSize: 12,
-                  color: "#8A8577"
-                },
-                children: ["· ", slot.heures, "h"]
-              }, void 0, true)]
-            }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-              style: {
-                background: "#fff",
-                borderRadius: 10,
-                border: "1px solid #E3DDD1",
-                overflow: "hidden"
-              },
-              children: STAGIAIRES.map((st, i) => {
-                const contrat = contrats[st.id] || {
-                  dateEntree: st.dateEntree,
-                  dateFin: ""
-                };
-                const notYet = slot.date < contrat.dateEntree || contrat.dateFin && slot.date > contrat.dateFin;
-                const entry = getEntry(st.id, slot.date, slot.creneau);
-                return /*#__PURE__*/_jsxDEV("div", {
-                  style: {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 14px",
-                    borderBottom: i < STAGIAIRES.length - 1 ? "1px solid #F0EEE6" : "none",
-                    opacity: notYet ? 0.4 : 1
-                  },
-                  children: [/*#__PURE__*/_jsxDEV("div", {
-                    style: {
-                      width: 170,
-                      fontSize: 13,
-                      fontWeight: 500
-                    },
-                    children: [st.nom, " ", st.prenom]
-                  }, void 0, true), notYet ? /*#__PURE__*/_jsxDEV("span", {
-                    style: {
-                      fontSize: 12,
-                      color: "#8A8577",
-                      fontStyle: "italic"
-                    },
-                    children: slot.date < (contrats[st.id] || {}).dateEntree ? "Pas encore sous contrat" : "Contrat terminé"
-                  }, void 0, false) : /*#__PURE__*/_jsxDEV(_Fragment, {
-                    children: [/*#__PURE__*/_jsxDEV("div", {
-                      style: {
-                        display: "flex",
-                        gap: 6,
-                        flexWrap: "wrap"
-                      },
-                      children: STATUTS.map(s => {
-                        const sStyle = STATUT_STYLE[s];
-                        const isActive = entry.statut === s;
-                        return /*#__PURE__*/_jsxDEV("button", {
-                          onClick: () => setStatut(st.id, slot.date, slot.creneau, s),
-                          style: {
-                            fontSize: 12,
-                            padding: "5px 10px",
-                            borderRadius: 20,
-                            border: isActive ? `1.5px solid ${sStyle.dot}` : "1px solid #E3DDD1",
-                            background: isActive ? sStyle.bg : "#fff",
-                            color: isActive ? sStyle.fg : "#8A8577",
-                            fontWeight: isActive ? 600 : 400
-                          },
-                          children: s
-                        }, s, false);
-                      })
-                    }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-                      placeholder: "Commentaire (optionnel)",
-                      value: entry.commentaire,
-                      onChange: e => setCommentaire(st.id, slot.date, slot.creneau, e.target.value),
-                      style: {
-                        marginLeft: "auto",
-                        fontSize: 12,
-                        padding: "6px 10px",
-                        borderRadius: 6,
-                        border: "1px solid #E3DDD1",
-                        width: 200
-                      }
-                    }, void 0, false)]
-                  }, void 0, true)]
-                }, st.id, true);
-              })
-            }, void 0, false)]
-          }, si, true))]
-        }, void 0, true)]
-      }, void 0, true), tab === "recap" && /*#__PURE__*/_jsxDEV("div", {
-        children: [/*#__PURE__*/_jsxDEV("div", {
-          className: "no-print",
-          style: {
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 16,
-            marginBottom: 16,
-            flexWrap: "wrap"
-          },
-          children: [/*#__PURE__*/_jsxDEV("div", {
-            children: [/*#__PURE__*/_jsxDEV("div", {
-              className: "pf",
-              style: {
-                fontSize: 19,
-                fontWeight: 700
-              },
-              children: "Récapitulatif par stagiaire"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-              style: {
-                fontSize: 13,
-                color: "#8A8577",
-                marginTop: 2
-              },
-              children: "% AI = heures d'absences injustifiées ÷ heures prévues sur la durée réelle du contrat de chaque stagiaire"
-            }, void 0, false)]
-          }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              marginLeft: "auto",
-              display: "flex",
-              gap: 8,
-              alignItems: "center"
-            },
-            children: [/*#__PURE__*/_jsxDEV("label", {
-              style: {
-                fontSize: 12,
-                color: "#8A8577"
-              },
-              children: "Période export :"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-              type: "date",
-              value: rangeFrom,
-              min: DATES[0],
-              max: rangeTo,
-              onChange: e => setRangeFrom(e.target.value),
-              style: {
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                fontSize: 12
-              }
-            }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
-              style: {
-                fontSize: 12,
-                color: "#8A8577"
-              },
-              children: "→"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-              type: "date",
-              value: rangeTo,
-              min: rangeFrom,
-              max: DATES[DATES.length - 1],
-              onChange: e => setRangeTo(e.target.value),
-              style: {
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #E3DDD1",
-                fontSize: 12
-              }
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              onClick: exportRecapHTML,
-              style: {
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "7px 14px",
-                borderRadius: 8,
-                border: "none",
-                background: "#3A4A35",
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: 600
-              },
-              children: "🖨️ Exporter (à imprimer en PDF)"
-            }, void 0, false)]
-          }, void 0, true)]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-          className: "no-print",
-          style: {
-            marginBottom: 16
-          },
-          children: [/*#__PURE__*/_jsxDEV("div", {
-            style: {
-              fontSize: 13,
-              fontWeight: 600,
-              marginBottom: 6
-            },
-            children: "Stagiaires à inclure dans l'export"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              display: "flex",
-              gap: 6,
-              flexWrap: "wrap",
-              marginBottom: 4
-            },
-            children: [/*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setSelectedIds(STAGIAIRES.map(s => s.id)),
-              style: {
-                fontSize: 11,
-                padding: "4px 9px",
-                borderRadius: 20,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                color: "#8A8577"
-              },
-              children: "Tous"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-              onClick: () => setSelectedIds([]),
-              style: {
-                fontSize: 11,
-                padding: "4px 9px",
-                borderRadius: 20,
-                border: "1px solid #E3DDD1",
-                background: "#fff",
-                color: "#8A8577"
-              },
-              children: "Aucun"
-            }, void 0, false), STAGIAIRES.map(st => {
-              const active = selectedIds.includes(st.id);
-              return /*#__PURE__*/_jsxDEV("button", {
-                onClick: () => toggleSelected(st.id),
-                style: {
-                  fontSize: 12,
-                  padding: "5px 10px",
-                  borderRadius: 20,
-                  border: active ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
-                  background: active ? "#E9EFE6" : "#fff",
-                  color: active ? "#4A6741" : "#8A8577",
-                  fontWeight: active ? 600 : 400
-                },
-                children: [st.nom, " ", st.prenom]
-              }, st.id, true);
-            })]
-          }, void 0, true)]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #E3DDD1",
-            overflow: "hidden",
-            marginBottom: 20
-          },
-          children: /*#__PURE__*/_jsxDEV("table", {
-            style: {
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: 13
-            },
-            children: [/*#__PURE__*/_jsxDEV("thead", {
-              children: /*#__PURE__*/_jsxDEV("tr", {
-                style: {
-                  background: "#3A4A35",
-                  color: "#fff"
-                },
-                children: ["Stagiaire", "Heures période", "AJ (période)", "AI (période)", "Arrêt (période)", "% AI (sur son contrat)"].map(h => /*#__PURE__*/_jsxDEV("th", {
-                  style: {
-                    padding: "10px 12px",
-                    textAlign: "left",
-                    fontWeight: 600,
-                    fontSize: 12
-                  },
-                  children: h
-                }, h, false))
-              }, void 0, false)
-            }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
-              children: recap.filter(r => selectedIds.includes(r.id)).map((r, i) => /*#__PURE__*/_jsxDEV("tr", {
-                style: {
-                  borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
-                },
-                children: [/*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px",
-                    fontWeight: 500
-                  },
-                  children: [r.nom, " ", r.prenom]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px"
-                  },
-                  children: [r.heuresFactureesPeriode, "h"]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px"
-                  },
-                  children: [r.heuresAJPeriode, "h"]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px"
-                  },
-                  children: [r.heuresAIPeriode, "h"]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px"
-                  },
-                  children: [r.heuresArretPeriode, "h"]
-                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                  style: {
-                    padding: "10px 12px"
-                  },
-                  children: /*#__PURE__*/_jsxDEV("span", {
-                    style: {
-                      padding: "3px 9px",
-                      borderRadius: 20,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      background: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#FBE9E4" : "#E9EFE6",
-                      color: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#B3502F" : "#4A6741"
-                    },
-                    children: [r.pctAIAnnuel.toFixed(1), "%"]
-                  }, void 0, true)
-                }, void 0, false)]
-              }, r.id, true))
-            }, void 0, false)]
-          }, void 0, true)
-        }, void 0, false), /*#__PURE__*/_jsxDEV("details", {
-          className: "no-print",
-          style: {
-            marginBottom: 16,
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #E3DDD1",
-            padding: "12px 16px"
-          },
-          children: [/*#__PURE__*/_jsxDEV("summary", {
-            style: {
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer"
-            },
-            children: "Durée de contrat par stagiaire"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              fontSize: 12,
-              color: "#8A8577",
-              margin: "8px 0"
-            },
-            children: "À renseigner pour un stagiaire arrivé après le démarrage ou parti avant la fin — laisser \"date de fin\" vide sinon."
-          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              borderRadius: 10,
-              border: "1px solid #E3DDD1",
-              overflow: "auto"
-            },
-            children: /*#__PURE__*/_jsxDEV("table", {
-              style: {
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: 12
-              },
-              children: [/*#__PURE__*/_jsxDEV("thead", {
-                children: /*#__PURE__*/_jsxDEV("tr", {
-                  style: {
-                    background: "#3A4A35",
-                    color: "#fff"
-                  },
-                  children: ["Stagiaire", "Date d'entrée", "Date de fin (si abandon)"].map(h => /*#__PURE__*/_jsxDEV("th", {
-                    style: {
-                      padding: "8px 10px",
-                      textAlign: "left",
-                      fontWeight: 600
-                    },
-                    children: h
-                  }, h, false))
-                }, void 0, false)
-              }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
-                children: STAGIAIRES.map((st, i) => {
-                  const c = contrats[st.id];
-                  const update = (field, value) => {
-                    const merged = {
-                      ...c,
-                      [field]: value
-                    };
-                    setContrats(prev => ({
-                      ...prev,
-                      [st.id]: merged
-                    }));
-                    postToBackend("updateContrat", {
-                      stagiaireId: st.id,
-                      dateEntree: merged.dateEntree,
-                      dateFin: merged.dateFin
-                    });
-                  };
-                  return /*#__PURE__*/_jsxDEV("tr", {
-                    style: {
-                      borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
-                    },
-                    children: [/*#__PURE__*/_jsxDEV("td", {
-                      style: {
-                        padding: "8px 10px",
-                        fontWeight: 500
-                      },
-                      children: [st.nom, " ", st.prenom]
-                    }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                      style: {
-                        padding: "6px 8px"
-                      },
-                      children: /*#__PURE__*/_jsxDEV("input", {
-                        type: "date",
-                        value: c.dateEntree,
-                        min: DATES[0],
-                        max: DATES[DATES.length - 1],
-                        onChange: e => update("dateEntree", e.target.value),
-                        style: {
-                          padding: "5px 7px",
-                          borderRadius: 5,
-                          border: "1px solid #E3DDD1",
-                          fontSize: 12
-                        }
-                      }, void 0, false)
-                    }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                      style: {
-                        padding: "6px 8px"
-                      },
-                      children: /*#__PURE__*/_jsxDEV("input", {
-                        type: "date",
-                        value: c.dateFin,
-                        min: c.dateEntree,
-                        max: DATES[DATES.length - 1],
-                        onChange: e => update("dateFin", e.target.value),
-                        style: {
-                          padding: "5px 7px",
-                          borderRadius: 5,
-                          border: "1px solid #E3DDD1",
-                          fontSize: 12
-                        }
-                      }, void 0, false)
-                    }, void 0, false)]
-                  }, st.id, true);
-                })
-              }, void 0, false)]
-            }, void 0, true)
-          }, void 0, false)]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("details", {
-          className: "no-print",
-          style: {
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #E3DDD1",
-            padding: "12px 16px"
-          },
-          children: [/*#__PURE__*/_jsxDEV("summary", {
-            className: "pf",
-            style: {
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: "pointer"
-            },
-            children: "Détail des absences par date"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              marginTop: 12
-            },
-            children: selectedStagiaires.map(st => {
-              const rows = detailAbsences[st.id] || [];
-              return /*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  marginBottom: 18,
-                  breakInside: "avoid"
-                },
-                children: [/*#__PURE__*/_jsxDEV("div", {
-                  style: {
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 6
-                  },
-                  children: [st.nom, " ", st.prenom]
-                }, void 0, true), rows.length === 0 ? /*#__PURE__*/_jsxDEV("div", {
-                  style: {
-                    fontSize: 12,
-                    color: "#8A8577",
-                    fontStyle: "italic"
-                  },
-                  children: "Aucune absence sur la période sélectionnée."
-                }, void 0, false) : /*#__PURE__*/_jsxDEV("div", {
-                  style: {
-                    background: "#fff",
-                    borderRadius: 8,
-                    border: "1px solid #E3DDD1",
-                    overflow: "hidden"
-                  },
-                  children: /*#__PURE__*/_jsxDEV("table", {
-                    style: {
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      fontSize: 12
-                    },
-                    children: [/*#__PURE__*/_jsxDEV("thead", {
-                      children: /*#__PURE__*/_jsxDEV("tr", {
-                        style: {
-                          background: "#F0EEE6"
-                        },
-                        children: ["Date", "Créneau", "Modalité", "Statut", "Commentaire"].map(h => /*#__PURE__*/_jsxDEV("th", {
-                          style: {
-                            padding: "6px 10px",
-                            textAlign: "left",
-                            fontWeight: 600,
-                            color: "#4A4A42"
-                          },
-                          children: h
-                        }, h, false))
-                      }, void 0, false)
-                    }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
-                      children: rows.map((row, i) => /*#__PURE__*/_jsxDEV("tr", {
-                        style: {
-                          borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
-                        },
-                        children: [/*#__PURE__*/_jsxDEV("td", {
-                          style: {
-                            padding: "6px 10px"
-                          },
-                          children: formatDateFR(row.date)
-                        }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                          style: {
-                            padding: "6px 10px"
-                          },
-                          children: row.creneau
-                        }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                          style: {
-                            padding: "6px 10px"
-                          },
-                          children: row.modalite
-                        }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                          style: {
-                            padding: "6px 10px"
-                          },
-                          children: /*#__PURE__*/_jsxDEV("span", {
-                            style: {
-                              padding: "2px 8px",
-                              borderRadius: 20,
-                              fontSize: 11,
-                              fontWeight: 600,
-                              background: STATUT_STYLE[row.statut].bg,
-                              color: STATUT_STYLE[row.statut].fg
-                            },
-                            children: row.statut
-                          }, void 0, false)
-                        }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                          style: {
-                            padding: "6px 10px",
-                            color: "#8A8577"
-                          },
-                          children: row.commentaire || "—"
-                        }, void 0, false)]
-                      }, i, true))
-                    }, void 0, false)]
-                  }, void 0, true)
-                }, void 0, false)]
-              }, st.id, true);
-            })
-          }, void 0, false)]
-        }, void 0, true), stagiairesEnAlerte.length > 0 && /*#__PURE__*/_jsxDEV("div", {
-          className: "no-print",
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 12,
-            fontSize: 12,
-            color: "#B3502F"
-          },
-          children: ["⚠️ ", stagiairesEnAlerte.length, " stagiaire(s) au-dessus du seuil d'alerte (", SEUIL_ALERTE_PCT, "% d'AI annuel) — voir l'onglet Notifications."]
-        }, void 0, true)]
-      }, void 0, true), tab === "contacts" && /*#__PURE__*/_jsxDEV("div", {
-        children: [/*#__PURE__*/_jsxDEV("div", {
-          className: "pf",
-          style: {
-            fontSize: 19,
-            fontWeight: 700,
-            marginBottom: 4
-          },
-          children: "Notifications d'absence"
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 13,
-            color: "#8A8577",
-            marginBottom: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 6
-          },
-          children: "🔒 L'envoi réel se fera via Apps Script (accès restreint à certaines adresses) une fois connecté à Google Sheets. Ici : tu prépares le mail, tu le relis, puis tu l'ouvres dans Outlook pour l'envoyer toi-même."
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "12px 16px",
-            borderRadius: 10,
-            marginBottom: 20,
-            background: testMode ? "#FBF1DE" : "#FBE9E4",
-            border: `1px solid ${testMode ? "#D9A73D" : "#C97B5F"}`
-          },
-          children: [/*#__PURE__*/_jsxDEV("label", {
-            style: {
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              color: testMode ? "#9C7A29" : "#B3502F",
-              cursor: "pointer"
-            },
-            children: [/*#__PURE__*/_jsxDEV("input", {
-              type: "checkbox",
-              checked: testMode,
-              onChange: e => setTestMode(e.target.checked)
-            }, void 0, false), "Mode test actif"]
-          }, void 0, true), testMode ? /*#__PURE__*/_jsxDEV(_Fragment, {
-            children: [/*#__PURE__*/_jsxDEV("span", {
-              style: {
-                fontSize: 12,
-                color: "#9C7A29"
-              },
-              children: "Tous les mails générés partent vers cette adresse à la place des vrais contacts :"
-            }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-              type: "email",
-              value: testEmail,
-              onChange: e => setTestEmail(e.target.value),
-              placeholder: "tonadresse@hdfbasket.org",
-              style: {
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #D9A73D",
-                fontSize: 12,
-                minWidth: 220
-              }
-            }, void 0, false)]
-          }, void 0, true) : /*#__PURE__*/_jsxDEV("span", {
-            style: {
-              fontSize: 12,
-              color: "#B3502F",
-              fontWeight: 600
-            },
-            children: "⚠️ Désactivé — les mails partiront vers les vraies adresses des contacts. À n'utiliser qu'en production."
-          }, void 0, false)]
-        }, void 0, true), stagiairesEnAlerte.length > 0 && /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            marginTop: 20,
-            marginBottom: 24
-          },
-          children: [/*#__PURE__*/_jsxDEV("div", {
-            style: {
-              fontSize: 14,
-              fontWeight: 600,
-              marginBottom: 8,
-              color: "#B3502F"
-            },
-            children: ["Alertes seuil (", SEUIL_ALERTE_PCT, "% d'AI annuel atteint)"]
-          }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-            style: {
-              display: "flex",
-              flexDirection: "column",
-              gap: 8
-            },
-            children: stagiairesEnAlerte.map(r => /*#__PURE__*/_jsxDEV("div", {
-              style: {
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                background: "#fff",
-                border: "1px solid #E3DDD1",
-                borderRadius: 8,
-                padding: "10px 14px"
-              },
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  flex: 1,
-                  fontSize: 13,
-                  fontWeight: 500
-                },
-                children: [r.nom, " ", r.prenom]
-              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  fontSize: 12,
-                  color: "#B3502F",
-                  fontWeight: 600
-                },
-                children: [r.pctAIAnnuel.toFixed(1), "% AI"]
-              }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
-                onClick: () => setPreviewMail(buildAlertMail(r)),
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  border: "1px solid #B3502F",
-                  background: "#fff",
-                  color: "#B3502F",
-                  fontSize: 12,
-                  fontWeight: 600
-                },
-                children: "✉️ Préparer l'alerte"
-              }, void 0, false)]
-            }, r.id, true))
-          }, void 0, false)]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            marginTop: 20,
-            marginBottom: 8,
-            fontSize: 14,
-            fontWeight: 600
-          },
-          children: "Notifier une absence ponctuelle"
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            marginBottom: 24
-          },
-          children: STAGIAIRES.map(st => {
-            const r = recap.find(x => x.id === st.id);
-            return /*#__PURE__*/_jsxDEV("div", {
-              style: {
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                background: "#fff",
-                border: "1px solid #E3DDD1",
-                borderRadius: 8,
-                padding: "10px 14px"
-              },
-              children: [/*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  width: 170,
-                  fontSize: 13,
-                  fontWeight: 500
-                },
-                children: [st.nom, " ", st.prenom]
-              }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-                style: {
-                  fontSize: 12,
-                  color: "#8A8577"
-                },
-                children: r.dernierAbsenceAI ? `Dernière AI : ${formatDateShort(r.dernierAbsenceAI)}` : "Aucune absence injustifiée"
-              }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-                disabled: !r.dernierAbsenceAI,
-                onClick: () => setPreviewMail(buildAbsenceMail(st, r.dernierAbsenceAI)),
-                style: {
-                  marginLeft: "auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  border: "1px solid #6B8068",
-                  background: "#fff",
-                  color: r.dernierAbsenceAI ? "#4A6741" : "#C6C2B6",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: r.dernierAbsenceAI ? "pointer" : "not-allowed"
-                },
-                children: "✉️ Préparer le mail"
-              }, void 0, false)]
-            }, st.id, true);
-          })
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 14,
-            fontWeight: 600,
-            marginBottom: 8
-          },
-          children: "Contacts par stagiaire"
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 12,
-            color: "#8A8577",
-            marginBottom: 8
-          },
-          children: "Le GEIQPSAL n'est mis en copie que si la case est cochée (ça dépend du stagiaire)."
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #E3DDD1",
-            overflow: "auto"
-          },
-          children: /*#__PURE__*/_jsxDEV("table", {
-            style: {
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: 12
-            },
-            children: [/*#__PURE__*/_jsxDEV("thead", {
-              children: /*#__PURE__*/_jsxDEV("tr", {
-                style: {
-                  background: "#3A4A35",
-                  color: "#fff"
-                },
-                children: ["Stagiaire", "Email club", "Email maître d'apprentissage", "Email resp. session", "GEIQPSAL en copie ?", "Email GEIQPSAL"].map(h => /*#__PURE__*/_jsxDEV("th", {
-                  style: {
-                    padding: "8px 10px",
-                    textAlign: "left",
-                    fontWeight: 600
-                  },
-                  children: h
-                }, h, false))
-              }, void 0, false)
-            }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
-              children: STAGIAIRES.map((st, i) => {
-                const c = contacts[st.id];
-                const fieldToColumn = {
-                  club: "Email club",
-                  maitre: "Email maître d'apprentissage",
-                  respSession: "Email resp. session",
-                  geiqpsal: "Email GEIQPSAL"
-                };
-                const update = (field, value) => {
-                  setContacts(prev => ({
-                    ...prev,
-                    [st.id]: {
-                      ...prev[st.id],
-                      [field]: value
-                    }
-                  }));
-                  if (fieldToColumn[field]) {
-                    postToBackend("updateContact", {
-                      stagiaireId: st.id,
-                      field: fieldToColumn[field],
-                      value
-                    });
-                  }
-                };
-                return /*#__PURE__*/_jsxDEV("tr", {
-                  style: {
-                    borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
-                  },
-                  children: [/*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "8px 10px",
-                      fontWeight: 500
-                    },
-                    children: [st.nom, " ", st.prenom]
-                  }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "6px 8px"
-                    },
-                    children: /*#__PURE__*/_jsxDEV("input", {
-                      value: c.club,
-                      onChange: e => update("club", e.target.value),
-                      placeholder: "email@club.fr",
-                      style: {
-                        width: "100%",
-                        padding: "5px 7px",
-                        borderRadius: 5,
-                        border: "1px solid #E3DDD1",
-                        fontSize: 12
-                      }
-                    }, void 0, false)
-                  }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "6px 8px"
-                    },
-                    children: /*#__PURE__*/_jsxDEV("input", {
-                      value: c.maitre,
-                      onChange: e => update("maitre", e.target.value),
-                      placeholder: "à compléter",
-                      style: {
-                        width: "100%",
-                        padding: "5px 7px",
-                        borderRadius: 5,
-                        border: "1px solid #E3DDD1",
-                        fontSize: 12
-                      }
-                    }, void 0, false)
-                  }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "6px 8px"
-                    },
-                    children: /*#__PURE__*/_jsxDEV("input", {
-                      value: c.respSession,
-                      onChange: e => update("respSession", e.target.value),
-                      placeholder: "à compléter",
-                      style: {
-                        width: "100%",
-                        padding: "5px 7px",
-                        borderRadius: 5,
-                        border: "1px solid #E3DDD1",
-                        fontSize: 12
-                      }
-                    }, void 0, false)
-                  }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "6px 8px",
-                      textAlign: "center"
-                    },
-                    children: /*#__PURE__*/_jsxDEV("input", {
-                      type: "checkbox",
-                      checked: c.geiqpsalActif,
-                      onChange: e => update("geiqpsalActif", e.target.checked)
-                    }, void 0, false)
-                  }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
-                    style: {
-                      padding: "6px 8px"
-                    },
-                    children: /*#__PURE__*/_jsxDEV("input", {
-                      value: c.geiqpsal,
-                      onChange: e => update("geiqpsal", e.target.value),
-                      placeholder: "à compléter",
-                      disabled: !c.geiqpsalActif,
-                      style: {
-                        width: "100%",
-                        padding: "5px 7px",
-                        borderRadius: 5,
-                        border: "1px solid #E3DDD1",
-                        fontSize: 12,
-                        opacity: c.geiqpsalActif ? 1 : 0.5
-                      }
-                    }, void 0, false)
-                  }, void 0, false)]
-                }, st.id, true);
-              })
-            }, void 0, false)]
-          }, void 0, true)
-        }, void 0, false)]
-      }, void 0, true)]
-    }, void 0, true), commentModal && /*#__PURE__*/_jsxDEV("div", {
-      className: "no-print",
-      onClick: () => setCommentModal(null),
-      style: {
-        position: "fixed",
-        inset: 0,
-        background: "rgba(44,46,43,0.5)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-        zIndex: 50
-      },
-      children: /*#__PURE__*/_jsxDEV("div", {
-        onClick: e => e.stopPropagation(),
-        style: {
-          background: "#fff",
-          borderRadius: 12,
-          maxWidth: 420,
-          width: "100%",
-          padding: 24
-        },
-        children: [/*#__PURE__*/_jsxDEV("div", {
-          className: "pf",
-          style: {
-            fontSize: 16,
-            fontWeight: 700,
-            marginBottom: 4
-          },
-          children: "Commentaire"
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 12,
-            color: "#8A8577",
-            marginBottom: 12
-          },
-          children: [STAGIAIRES.find(s => s.id === commentModal.stagId).nom, " ", STAGIAIRES.find(s => s.id === commentModal.stagId).prenom, " · ", formatDateShort(commentModal.date), " ", commentModal.creneau]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("textarea", {
-          value: commentModal.text,
-          onChange: e => setCommentModal({
-            ...commentModal,
-            text: e.target.value
-          }),
-          rows: 4,
-          autoFocus: true,
-          placeholder: "Ex. : certificat médical reçu le...",
-          style: {
-            width: "100%",
-            padding: 10,
-            borderRadius: 8,
-            border: "1px solid #E3DDD1",
-            fontSize: 13,
-            fontFamily: "inherit",
-            resize: "vertical"
-          }
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            display: "flex",
-            gap: 8,
-            marginTop: 12,
-            justifyContent: "flex-end"
-          },
-          children: [/*#__PURE__*/_jsxDEV("button", {
-            onClick: () => setCommentModal(null),
-            style: {
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "1px solid #E3DDD1",
-              background: "#fff",
-              fontSize: 13
-            },
-            children: "Annuler"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-            onClick: () => {
-              setCommentaire(commentModal.stagId, commentModal.date, commentModal.creneau, commentModal.text);
-              setCommentModal(null);
-            },
-            style: {
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "none",
-              background: "#3A4A35",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 600
-            },
-            children: "Enregistrer"
-          }, void 0, false)]
-        }, void 0, true)]
-      }, void 0, true)
-    }, void 0, false), previewMail && /*#__PURE__*/_jsxDEV("div", {
-      className: "no-print",
-      onClick: () => setPreviewMail(null),
+        gap: 12,
+        padding: "10px 14px",
+        borderBottom: i < STAGIAIRES.length - 1 ? "1px solid #F0EEE6" : "none",
+        opacity: notYet ? 0.4 : 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
       style: {
-        position: "fixed",
-        inset: 0,
-        background: "rgba(44,46,43,0.5)",
+        width: 170,
+        fontSize: 13,
+        fontWeight: 500
+      }
+    }, st.nom, " ", st.prenom), notYet ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 12,
+        color: "#8A8577",
+        fontStyle: "italic"
+      }
+    }, slot.date < (contrats[st.id] || {}).dateEntree ? "Pas encore sous contrat" : "Contrat terminé") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 6,
+        flexWrap: "wrap"
+      }
+    }, STATUTS.map(s => {
+      const sStyle = STATUT_STYLE[s];
+      const isActive = entry.statut === s;
+      return /*#__PURE__*/React.createElement("button", {
+        key: s,
+        onClick: () => setStatut(st.id, slot.date, slot.creneau, s),
+        style: {
+          fontSize: 12,
+          padding: "5px 10px",
+          borderRadius: 20,
+          border: isActive ? `1.5px solid ${sStyle.dot}` : "1px solid #E3DDD1",
+          background: isActive ? sStyle.bg : "#fff",
+          color: isActive ? sStyle.fg : "#8A8577",
+          fontWeight: isActive ? 600 : 400
+        }
+      }, s);
+    })), /*#__PURE__*/React.createElement("input", {
+      placeholder: "Commentaire (optionnel)",
+      value: entry.commentaire,
+      onChange: e => setCommentaire(st.id, slot.date, slot.creneau, e.target.value),
+      style: {
+        marginLeft: "auto",
+        fontSize: 12,
+        padding: "6px 10px",
+        borderRadius: 6,
+        border: "1px solid #E3DDD1",
+        width: 200
+      }
+    })));
+  })))))), tab === "recap" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      display: "flex",
+      alignItems: "flex-end",
+      gap: 16,
+      marginBottom: 16,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "pf",
+    style: {
+      fontSize: 19,
+      fontWeight: 700
+    }
+  }, "Récapitulatif par stagiaire"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#8A8577",
+      marginTop: 2
+    }
+  }, "% AI = heures d'absences injustifiées ÷ heures prévues sur la durée réelle du contrat de chaque stagiaire")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginLeft: "auto",
+      display: "flex",
+      gap: 8,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "Période export :"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: rangeFrom,
+    min: DATES[0],
+    max: rangeTo,
+    onChange: e => setRangeFrom(e.target.value),
+    style: {
+      padding: "6px 8px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577"
+    }
+  }, "→"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: rangeTo,
+    min: rangeFrom,
+    max: DATES[DATES.length - 1],
+    onChange: e => setRangeTo(e.target.value),
+    style: {
+      padding: "6px 8px",
+      borderRadius: 6,
+      border: "1px solid #E3DDD1",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: exportRecapHTML,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "7px 14px",
+      borderRadius: 8,
+      border: "none",
+      background: "#3A4A35",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, "🖨️ Exporter (à imprimer en PDF)"))), /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      marginBottom: 6
+    }
+  }, "Stagiaires à inclure dans l'export"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      flexWrap: "wrap",
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSelectedIds(STAGIAIRES.map(s => s.id)),
+    style: {
+      fontSize: 11,
+      padding: "4px 9px",
+      borderRadius: 20,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      color: "#8A8577"
+    }
+  }, "Tous"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSelectedIds([]),
+    style: {
+      fontSize: 11,
+      padding: "4px 9px",
+      borderRadius: 20,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      color: "#8A8577"
+    }
+  }, "Aucun"), STAGIAIRES.map(st => {
+    const active = selectedIds.includes(st.id);
+    return /*#__PURE__*/React.createElement("button", {
+      key: st.id,
+      onClick: () => toggleSelected(st.id),
+      style: {
+        fontSize: 12,
+        padding: "5px 10px",
+        borderRadius: 20,
+        border: active ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+        background: active ? "#E9EFE6" : "#fff",
+        color: active ? "#4A6741" : "#8A8577",
+        fontWeight: active ? 600 : 400
+      }
+    }, st.nom, " ", st.prenom);
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      overflow: "hidden",
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#3A4A35",
+      color: "#fff"
+    }
+  }, ["Stagiaire", "Heures période", "AJ (période)", "AI (période)", "Arrêt (période)", "% AI (sur son contrat)"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      padding: "10px 12px",
+      textAlign: "left",
+      fontWeight: 600,
+      fontSize: 12
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, recap.filter(r => selectedIds.includes(r.id)).map((r, i) => /*#__PURE__*/React.createElement("tr", {
+    key: r.id,
+    style: {
+      borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px",
+      fontWeight: 500
+    }
+  }, r.nom, " ", r.prenom), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, r.heuresFactureesPeriode, "h"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, r.heuresAJPeriode, "h"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, r.heuresAIPeriode, "h"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, r.heuresArretPeriode, "h"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      padding: "3px 9px",
+      borderRadius: 20,
+      fontSize: 12,
+      fontWeight: 600,
+      background: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#FBE9E4" : "#E9EFE6",
+      color: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#B3502F" : "#4A6741"
+    }
+  }, r.pctAIAnnuel.toFixed(1), "%"))))))), /*#__PURE__*/React.createElement("details", {
+    className: "no-print",
+    style: {
+      marginBottom: 16,
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      padding: "12px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("summary", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "Durée de contrat par stagiaire"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      margin: "8px 0"
+    }
+  }, "À renseigner pour un stagiaire arrivé après le démarrage ou parti avant la fin — laisser \"date de fin\" vide sinon."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      overflow: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#3A4A35",
+      color: "#fff"
+    }
+  }, ["Stagiaire", "Date d'entrée", "Date de fin (si abandon)"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      padding: "8px 10px",
+      textAlign: "left",
+      fontWeight: 600
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, STAGIAIRES.map((st, i) => {
+    const c = contrats[st.id];
+    const update = (field, value) => {
+      const merged = {
+        ...c,
+        [field]: value
+      };
+      setContrats(prev => ({
+        ...prev,
+        [st.id]: merged
+      }));
+      postToBackend("updateContrat", {
+        stagiaireId: st.id,
+        dateEntree: merged.dateEntree,
+        dateFin: merged.dateFin
+      });
+    };
+    return /*#__PURE__*/React.createElement("tr", {
+      key: st.id,
+      style: {
+        borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 10px",
+        fontWeight: 500
+      }
+    }, st.nom, " ", st.prenom), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "date",
+      value: c.dateEntree,
+      min: DATES[0],
+      max: DATES[DATES.length - 1],
+      onChange: e => update("dateEntree", e.target.value),
+      style: {
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12
+      }
+    })), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "date",
+      value: c.dateFin,
+      min: c.dateEntree,
+      max: DATES[DATES.length - 1],
+      onChange: e => update("dateFin", e.target.value),
+      style: {
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12
+      }
+    })));
+  }))))), /*#__PURE__*/React.createElement("details", {
+    className: "no-print",
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      padding: "12px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "pf",
+    style: {
+      fontSize: 16,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "Détail des absences par date"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12
+    }
+  }, selectedStagiaires.map(st => {
+    const rows = detailAbsences[st.id] || [];
+    return /*#__PURE__*/React.createElement("div", {
+      key: st.id,
+      style: {
+        marginBottom: 18,
+        breakInside: "avoid"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 6
+      }
+    }, st.nom, " ", st.prenom), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#8A8577",
+        fontStyle: "italic"
+      }
+    }, "Aucune absence sur la période sélectionnée.") : /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: "#fff",
+        borderRadius: 8,
+        border: "1px solid #E3DDD1",
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("table", {
+      style: {
+        width: "100%",
+        borderCollapse: "collapse",
+        fontSize: 12
+      }
+    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+      style: {
+        background: "#F0EEE6"
+      }
+    }, ["Date", "Créneau", "Modalité", "Statut", "Commentaire"].map(h => /*#__PURE__*/React.createElement("th", {
+      key: h,
+      style: {
+        padding: "6px 10px",
+        textAlign: "left",
+        fontWeight: 600,
+        color: "#4A4A42"
+      }
+    }, h)))), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, i) => /*#__PURE__*/React.createElement("tr", {
+      key: i,
+      style: {
+        borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 10px"
+      }
+    }, formatDateFR(row.date)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 10px"
+      }
+    }, row.creneau), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 10px"
+      }
+    }, row.modalite), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 10px"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        padding: "2px 8px",
+        borderRadius: 20,
+        fontSize: 11,
+        fontWeight: 600,
+        background: STATUT_STYLE[row.statut].bg,
+        color: STATUT_STYLE[row.statut].fg
+      }
+    }, row.statut)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 10px",
+        color: "#8A8577"
+      }
+    }, row.commentaire || "—")))))));
+  }))), stagiairesEnAlerte.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 12,
+      fontSize: 12,
+      color: "#B3502F"
+    }
+  }, "⚠️ ", stagiairesEnAlerte.length, " stagiaire(s) au-dessus du seuil d'alerte (", SEUIL_ALERTE_PCT, "% d'AI annuel) — voir l'onglet Notifications.")), tab === "contacts" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "pf",
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      marginBottom: 4
+    }
+  }, "Notifications d'absence"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#8A8577",
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, "🔒 L'envoi réel se fera via Apps Script (accès restreint à certaines adresses) une fois connecté à Google Sheets. Ici : tu prépares le mail, tu le relis, puis tu l'ouvres dans Outlook pour l'envoyer toi-même."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "12px 16px",
+      borderRadius: 10,
+      marginBottom: 20,
+      background: testMode ? "#FBF1DE" : "#FBE9E4",
+      border: `1px solid ${testMode ? "#D9A73D" : "#C97B5F"}`
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontSize: 13,
+      fontWeight: 600,
+      color: testMode ? "#9C7A29" : "#B3502F",
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: testMode,
+    onChange: e => setTestMode(e.target.checked)
+  }), "Mode test actif"), testMode ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#9C7A29"
+    }
+  }, "Tous les mails générés partent vers cette adresse à la place des vrais contacts :"), /*#__PURE__*/React.createElement("input", {
+    type: "email",
+    value: testEmail,
+    onChange: e => setTestEmail(e.target.value),
+    placeholder: "tonadresse@hdfbasket.org",
+    style: {
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: "1px solid #D9A73D",
+      fontSize: 12,
+      minWidth: 220
+    }
+  })) : /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#B3502F",
+      fontWeight: 600
+    }
+  }, "⚠️ Désactivé — les mails partiront vers les vraies adresses des contacts. À n'utiliser qu'en production.")), stagiairesEnAlerte.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 20,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      marginBottom: 8,
+      color: "#B3502F"
+    }
+  }, "Alertes seuil (", SEUIL_ALERTE_PCT, "% d'AI annuel atteint)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, stagiairesEnAlerte.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      background: "#fff",
+      border: "1px solid #E3DDD1",
+      borderRadius: 8,
+      padding: "10px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      fontSize: 13,
+      fontWeight: 500
+    }
+  }, r.nom, " ", r.prenom), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#B3502F",
+      fontWeight: 600
+    }
+  }, r.pctAIAnnuel.toFixed(1), "% AI"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPreviewMail(buildAlertMail(r)),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "6px 12px",
+      borderRadius: 6,
+      border: "1px solid #B3502F",
+      background: "#fff",
+      color: "#B3502F",
+      fontSize: 12,
+      fontWeight: 600
+    }
+  }, "✉️ Préparer l'alerte"))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 20,
+      marginBottom: 8,
+      fontSize: 14,
+      fontWeight: 600
+    }
+  }, "Notifier une absence ponctuelle"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      marginBottom: 24
+    }
+  }, STAGIAIRES.map(st => {
+    const r = recap.find(x => x.id === st.id);
+    return /*#__PURE__*/React.createElement("div", {
+      key: st.id,
+      style: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-        zIndex: 50
-      },
-      children: /*#__PURE__*/_jsxDEV("div", {
-        onClick: e => e.stopPropagation(),
-        style: {
-          background: "#fff",
-          borderRadius: 12,
-          maxWidth: 560,
-          width: "100%",
-          maxHeight: "85vh",
-          overflow: "auto",
-          padding: 24
-        },
-        children: [/*#__PURE__*/_jsxDEV("div", {
-          className: "pf",
-          style: {
-            fontSize: 17,
-            fontWeight: 700,
-            marginBottom: 12
-          },
-          children: "Aperçu du mail"
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 12,
-            color: "#8A8577",
-            marginBottom: 4
-          },
-          children: ["À : ", previewMail.to || /*#__PURE__*/_jsxDEV("em", {
-            children: "(email club à compléter)"
-          }, void 0, false)]
-        }, void 0, true), previewMail.cc && /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 12,
-            color: "#8A8577",
-            marginBottom: 4
-          },
-          children: ["Copie : ", previewMail.cc]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            fontSize: 12,
-            color: "#8A8577",
-            marginBottom: 10
-          },
-          children: ["Objet : ", previewMail.subject]
-        }, void 0, true), /*#__PURE__*/_jsxDEV("textarea", {
-          value: previewMail.body,
-          onChange: e => setPreviewMail({
-            ...previewMail,
-            body: e.target.value
-          }),
-          rows: 14,
-          style: {
-            width: "100%",
-            padding: 12,
-            borderRadius: 8,
-            border: "1px solid #E3DDD1",
-            fontSize: 13,
-            fontFamily: "inherit",
-            resize: "vertical"
-          }
-        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-          style: {
-            display: "flex",
-            gap: 8,
-            marginTop: 14,
-            justifyContent: "flex-end",
-            alignItems: "center"
-          },
-          children: [copyFeedback && /*#__PURE__*/_jsxDEV("span", {
-            style: {
-              fontSize: 12,
-              color: "#4A6741",
-              marginRight: "auto"
-            },
-            children: "Copié !"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-            onClick: () => setPreviewMail(null),
-            style: {
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "1px solid #E3DDD1",
-              background: "#fff",
-              fontSize: 13
-            },
-            children: "Fermer"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-            onClick: () => copyMailToClipboard(previewMail),
-            style: {
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "1px solid #6B8068",
-              background: "#fff",
-              color: "#4A6741",
-              fontSize: 13,
-              fontWeight: 600
-            },
-            children: "Copier le texte"
-          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-            onClick: () => openInMailClient(previewMail),
-            style: {
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "none",
-              background: "#3A4A35",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 600
-            },
-            children: "➤ Ouvrir dans Outlook"
-          }, void 0, false)]
-        }, void 0, true)]
-      }, void 0, true)
-    }, void 0, false)]
-  }, void 0, true);
+        gap: 12,
+        background: "#fff",
+        border: "1px solid #E3DDD1",
+        borderRadius: 8,
+        padding: "10px 14px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 170,
+        fontSize: 13,
+        fontWeight: 500
+      }
+    }, st.nom, " ", st.prenom), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#8A8577"
+      }
+    }, r.dernierAbsenceAI ? `Dernière AI : ${formatDateShort(r.dernierAbsenceAI)}` : "Aucune absence injustifiée"), /*#__PURE__*/React.createElement("button", {
+      disabled: !r.dernierAbsenceAI,
+      onClick: () => setPreviewMail(buildAbsenceMail(st, r.dernierAbsenceAI)),
+      style: {
+        marginLeft: "auto",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 12px",
+        borderRadius: 6,
+        border: "1px solid #6B8068",
+        background: "#fff",
+        color: r.dernierAbsenceAI ? "#4A6741" : "#C6C2B6",
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: r.dernierAbsenceAI ? "pointer" : "not-allowed"
+      }
+    }, "✉️ Préparer le mail"));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, "Contacts par stagiaire"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginBottom: 8
+    }
+  }, "Le GEIQPSAL n'est mis en copie que si la case est cochée (ça dépend du stagiaire)."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #E3DDD1",
+      overflow: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#3A4A35",
+      color: "#fff"
+    }
+  }, ["Stagiaire", "Email club", "Email maître d'apprentissage", "Email resp. session", "GEIQPSAL en copie ?", "Email GEIQPSAL"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      padding: "8px 10px",
+      textAlign: "left",
+      fontWeight: 600
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, STAGIAIRES.map((st, i) => {
+    const c = contacts[st.id];
+    const fieldToColumn = {
+      club: "Email club",
+      maitre: "Email maître d'apprentissage",
+      respSession: "Email resp. session",
+      geiqpsal: "Email GEIQPSAL"
+    };
+    const update = (field, value) => {
+      setContacts(prev => ({
+        ...prev,
+        [st.id]: {
+          ...prev[st.id],
+          [field]: value
+        }
+      }));
+      if (fieldToColumn[field]) {
+        postToBackend("updateContact", {
+          stagiaireId: st.id,
+          field: fieldToColumn[field],
+          value
+        });
+      }
+    };
+    return /*#__PURE__*/React.createElement("tr", {
+      key: st.id,
+      style: {
+        borderTop: i > 0 ? "1px solid #F0EEE6" : "none"
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 10px",
+        fontWeight: 500
+      }
+    }, st.nom, " ", st.prenom), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      value: c.club,
+      onChange: e => update("club", e.target.value),
+      placeholder: "email@club.fr",
+      style: {
+        width: "100%",
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12
+      }
+    })), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      value: c.maitre,
+      onChange: e => update("maitre", e.target.value),
+      placeholder: "à compléter",
+      style: {
+        width: "100%",
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12
+      }
+    })), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      value: c.respSession,
+      onChange: e => update("respSession", e.target.value),
+      placeholder: "à compléter",
+      style: {
+        width: "100%",
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12
+      }
+    })), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px",
+        textAlign: "center"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: c.geiqpsalActif,
+      onChange: e => update("geiqpsalActif", e.target.checked)
+    })), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "6px 8px"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      value: c.geiqpsal,
+      onChange: e => update("geiqpsal", e.target.value),
+      placeholder: "à compléter",
+      disabled: !c.geiqpsalActif,
+      style: {
+        width: "100%",
+        padding: "5px 7px",
+        borderRadius: 5,
+        border: "1px solid #E3DDD1",
+        fontSize: 12,
+        opacity: c.geiqpsalActif ? 1 : 0.5
+      }
+    })));
+  })))))), commentModal && /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    onClick: () => setCommentModal(null),
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(44,46,43,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      zIndex: 50
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: "#fff",
+      borderRadius: 12,
+      maxWidth: 420,
+      width: "100%",
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pf",
+    style: {
+      fontSize: 16,
+      fontWeight: 700,
+      marginBottom: 4
+    }
+  }, "Commentaire"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginBottom: 12
+    }
+  }, STAGIAIRES.find(s => s.id === commentModal.stagId).nom, " ", STAGIAIRES.find(s => s.id === commentModal.stagId).prenom, " · ", formatDateShort(commentModal.date), " ", commentModal.creneau), /*#__PURE__*/React.createElement("textarea", {
+    value: commentModal.text,
+    onChange: e => setCommentModal({
+      ...commentModal,
+      text: e.target.value
+    }),
+    rows: 4,
+    autoFocus: true,
+    placeholder: "Ex. : certificat médical reçu le...",
+    style: {
+      width: "100%",
+      padding: 10,
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      fontSize: 13,
+      fontFamily: "inherit",
+      resize: "vertical"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 12,
+      justifyContent: "flex-end"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setCommentModal(null),
+    style: {
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      fontSize: 13
+    }
+  }, "Annuler"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setCommentaire(commentModal.stagId, commentModal.date, commentModal.creneau, commentModal.text);
+      setCommentModal(null);
+    },
+    style: {
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "none",
+      background: "#3A4A35",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, "Enregistrer")))), previewMail && /*#__PURE__*/React.createElement("div", {
+    className: "no-print",
+    onClick: () => setPreviewMail(null),
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(44,46,43,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      zIndex: 50
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: "#fff",
+      borderRadius: 12,
+      maxWidth: 560,
+      width: "100%",
+      maxHeight: "85vh",
+      overflow: "auto",
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pf",
+    style: {
+      fontSize: 17,
+      fontWeight: 700,
+      marginBottom: 12
+    }
+  }, "Aperçu du mail"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginBottom: 4
+    }
+  }, "À : ", previewMail.to || /*#__PURE__*/React.createElement("em", null, "(email club à compléter)")), previewMail.cc && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginBottom: 4
+    }
+  }, "Copie : ", previewMail.cc), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8A8577",
+      marginBottom: 10
+    }
+  }, "Objet : ", previewMail.subject), /*#__PURE__*/React.createElement("textarea", {
+    value: previewMail.body,
+    onChange: e => setPreviewMail({
+      ...previewMail,
+      body: e.target.value
+    }),
+    rows: 14,
+    style: {
+      width: "100%",
+      padding: 12,
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      fontSize: 13,
+      fontFamily: "inherit",
+      resize: "vertical"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 14,
+      justifyContent: "flex-end",
+      alignItems: "center"
+    }
+  }, copyFeedback && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#4A6741",
+      marginRight: "auto"
+    }
+  }, "Copié !"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPreviewMail(null),
+    style: {
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      background: "#fff",
+      fontSize: 13
+    }
+  }, "Fermer"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => copyMailToClipboard(previewMail),
+    style: {
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "1px solid #6B8068",
+      background: "#fff",
+      color: "#4A6741",
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, "Copier le texte"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => openInMailClient(previewMail),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "none",
+      background: "#3A4A35",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, "➤ Ouvrir dans Outlook")))));
 }
 function parseDate(v) {
   if (!v) return "";
@@ -2133,16 +1955,16 @@ function App() {
     });
   }
   if (status === "ready" && data) {
-    return /*#__PURE__*/_jsxDEV(Dashboard, {
+    return /*#__PURE__*/React.createElement(Dashboard, {
       initialSlots: data.slots,
       initialStagiaires: data.stagiaires,
       initialPresences: data.presences,
       initialContacts: data.contacts,
       initialContrats: data.contrats,
       token: token
-    }, void 0, false);
+    });
   }
-  return /*#__PURE__*/_jsxDEV("div", {
+  return /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'Inter', -apple-system, sans-serif",
       background: "#F7F5F0",
@@ -2151,83 +1973,76 @@ function App() {
       alignItems: "center",
       justifyContent: "center",
       padding: 20
-    },
-    children: /*#__PURE__*/_jsxDEV("form", {
-      onSubmit: tryLogin,
-      style: {
-        background: "#fff",
-        borderRadius: 14,
-        padding: 32,
-        maxWidth: 360,
-        width: "100%",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.08)"
-      },
-      children: [/*#__PURE__*/_jsxDEV("div", {
-        style: {
-          fontFamily: "'Playfair Display', serif",
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#3A4A35",
-          marginBottom: 4
-        },
-        children: "Assiduité - BPJEPS Saint-Quentin"
-      }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
-        style: {
-          fontSize: 13,
-          color: "#8A8577",
-          marginBottom: 20
-        },
-        children: "IRFBB Hauts-de-France"
-      }, void 0, false), /*#__PURE__*/_jsxDEV("label", {
-        style: {
-          fontSize: 12,
-          fontWeight: 600,
-          color: "#4A4A42",
-          display: "block",
-          marginBottom: 6
-        },
-        children: "Code d'accès"
-      }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
-        type: "password",
-        value: codeInput,
-        onChange: e => setCodeInput(e.target.value),
-        autoFocus: true,
-        style: {
-          width: "100%",
-          padding: "10px 12px",
-          borderRadius: 8,
-          border: "1px solid #E3DDD1",
-          fontSize: 14,
-          marginBottom: 14
-        }
-      }, void 0, false), status === "error" && /*#__PURE__*/_jsxDEV("div", {
-        style: {
-          fontSize: 12,
-          color: "#B3502F",
-          marginBottom: 14
-        },
-        children: errorMsg
-      }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
-        type: "submit",
-        disabled: status === "loading",
-        style: {
-          width: "100%",
-          padding: "10px 16px",
-          borderRadius: 8,
-          border: "none",
-          background: "#3A4A35",
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 600,
-          opacity: status === "loading" ? 0.6 : 1
-        },
-        children: status === "loading" ? "Connexion..." : "Entrer"
-      }, void 0, false)]
-    }, void 0, true)
-  }, void 0, false);
+    }
+  }, /*#__PURE__*/React.createElement("style", null, ``), /*#__PURE__*/React.createElement("form", {
+    onSubmit: tryLogin,
+    style: {
+      background: "#fff",
+      borderRadius: 14,
+      padding: 32,
+      maxWidth: 360,
+      width: "100%",
+      boxShadow: "0 4px 24px rgba(0,0,0,0.08)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Playfair Display', serif",
+      fontSize: 20,
+      fontWeight: 700,
+      color: "#3A4A35",
+      marginBottom: 4
+    }
+  }, "Assiduité - BPJEPS Saint-Quentin"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#8A8577",
+      marginBottom: 20
+    }
+  }, "IRFBB Hauts-de-France"), /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: "#4A4A42",
+      display: "block",
+      marginBottom: 6
+    }
+  }, "Code d'accès"), /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    value: codeInput,
+    onChange: e => setCodeInput(e.target.value),
+    autoFocus: true,
+    style: {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 8,
+      border: "1px solid #E3DDD1",
+      fontSize: 14,
+      marginBottom: 14
+    }
+  }), status === "error" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#B3502F",
+      marginBottom: 14
+    }
+  }, errorMsg), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: status === "loading",
+    style: {
+      width: "100%",
+      padding: "10px 16px",
+      borderRadius: 8,
+      border: "none",
+      background: "#3A4A35",
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: 600,
+      opacity: status === "loading" ? 0.6 : 1
+    }
+  }, status === "loading" ? "Connexion..." : "Entrer")));
 }
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(/*#__PURE__*/_jsxDEV(App, {}, void 0, false));
+root.render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
 </html>

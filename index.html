@@ -352,9 +352,7 @@ Bien cordialement,`;
     params.set("subject", mail.subject);
     params.set("body", mail.body);
     const url = `mailto:${mail.to || ""}?${params.toString()}`;
-    // window.open en secours si la navigation directe est bloquée (aperçu en bac à sable)
-    const w = window.open(url, "_blank");
-    if (!w) window.location.href = url;
+    window.location.href = url;
   }
   function copyMailToClipboard(mail) {
     const text = `À : ${mail.to || "(à compléter)"}\nCopie : ${mail.cc || "—"}\nObjet : ${mail.subject}\n\n${mail.body}`;

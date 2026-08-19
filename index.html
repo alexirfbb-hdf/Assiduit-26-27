@@ -18,7 +18,8 @@
 const {
   useState,
   useEffect,
-  useMemo
+  useMemo,
+  useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
 const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
@@ -84,18 +85,28 @@ function Dashboard({
   const STAGIAIRES = initialStagiaires;
   const DATES = Array.from(new Set(SLOTS.map(s => s.date))).sort();
   const TOTAL_HEURES_ANNUELLES = SLOTS.reduce((a, s) => a + s.heures, 0);
+  const [saveStatus, setSaveStatus] = useState(null); // null | "ok" | "error"
+  const saveStatusTimer = useRef(null);
   function postToBackend(action, data) {
-    fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        token,
-        action,
-        ...data
-      })
-    }).catch(err => console.error("Erreur de sauvegarde", err));
+    const params = new URLSearchParams({
+      token,
+      action,
+      ...data
+    });
+    fetch(`${APPS_SCRIPT_URL}?${params.toString()}`).then(r => r.json()).then(json => {
+      if (json && json.success) {
+        setSaveStatus("ok");
+      } else {
+        setSaveStatus("error");
+        console.error("Échec d'enregistrement :", json && json.error);
+      }
+    }).catch(err => {
+      setSaveStatus("error");
+      console.error("Erreur réseau lors de la sauvegarde", err);
+    }).finally(() => {
+      clearTimeout(saveStatusTimer.current);
+      saveStatusTimer.current = setTimeout(() => setSaveStatus(null), 2500);
+    });
   }
   const [tab, setTab] = useState("presence");
   const defaultDateIdx = (() => {
@@ -346,13 +357,14 @@ Bien cordialement,`;
       body: `⚠️ MODE TEST — destinataires réels : À "${mail.to || "—"}", Copie "${mail.cc || "—"}"\n\n${mail.body}`
     };
   }
-  function openInMailClient(mail) {
+  function openInOutlookWeb(mail) {
+    // Pour Outlook sur le web (Office 365) — fonctionne sans client mail de bureau enregistré
     const params = new URLSearchParams();
+    params.set("to", mail.to || "");
     if (mail.cc) params.set("cc", mail.cc);
     params.set("subject", mail.subject);
     params.set("body", mail.body);
-    const url = `mailto:${mail.to || ""}?${params.toString()}`;
-    window.location.href = url;
+    window.open(`https://outlook.office.com/mail/deeplink/compose?${params.toString()}`, "_blank");
   }
   function copyMailToClipboard(mail) {
     const text = `À : ${mail.to || "(à compléter)"}\nCopie : ${mail.cc || "—"}\nObjet : ${mail.subject}\n\n${mail.body}`;
@@ -435,7 +447,8 @@ Bien cordialement,`;
     style: {
       background: "#3A4A35",
       color: "#F7F5F0",
-      padding: "20px 24px"
+      padding: "20px 24px",
+      position: "relative"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -458,7 +471,19 @@ Bien cordialement,`;
       opacity: 0.75,
       marginTop: 4
     }
-  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires")), /*#__PURE__*/React.createElement("div", {
+  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"), saveStatus && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 16,
+      right: 24,
+      fontSize: 12,
+      fontWeight: 600,
+      padding: "5px 12px",
+      borderRadius: 20,
+      background: saveStatus === "ok" ? "#7A9471" : "#C97B5F",
+      color: "#fff"
+    }
+  }, saveStatus === "ok" ? "✓ Enregistré" : "✗ Échec de l'enregistrement — réessaie")), /*#__PURE__*/React.createElement("div", {
     className: "no-print",
     style: {
       display: "flex",
@@ -1844,7 +1869,7 @@ Bien cordialement,`;
       fontWeight: 600
     }
   }, "Copier le texte"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => openInMailClient(previewMail),
+    onClick: () => openInOutlookWeb(previewMail),
     style: {
       display: "flex",
       alignItems: "center",
@@ -1857,7 +1882,7 @@ Bien cordialement,`;
       fontSize: 13,
       fontWeight: 600
     }
-  }, "➤ Ouvrir dans Outlook")))));
+  }, "➤ Ouvrir dans Outlook Web")))));
 }
 function parseDate(v) {
   if (!v) return "";

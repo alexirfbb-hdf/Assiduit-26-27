@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assiduité - BPJEPS Saint-Quentin</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #F7F5F0; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
+
+const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
+
+
+const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
+const STATUT_STYLE = {
+  "Présent": { bg: "#E9EFE6", fg: "#4A6741", dot: "#7A9471" },
+  "Absent AJ": { bg: "#FBF1DE", fg: "#9C7A29", dot: "#D9A73D" },
+  "Absent AI": { bg: "#FBE9E4", fg: "#B3502F", dot: "#C97B5F" },
+  "Arrêt de travail": { bg: "#EDEBF4", fg: "#5B4E8C", dot: "#8A7BB8" },
+};
+
+function formatDateLong(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+function formatDateShort(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+}
+function formatDateFR(iso) {
+  const d = new Date(iso + "T00:00:00");
+  const s = d.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function Dashboard({ initialSlots, initialStagiaires, initialPresences, initialContacts, initialContrats, token }) {
+  const SLOTS = initialSlots;
+  const STAGIAIRES = initialStagiaires;
+  const DATES = Array.from(new Set(SLOTS.map(s => s.date))).sort();
+  const TOTAL_HEURES_ANNUELLES = SLOTS.reduce((a, s) => a + s.heures, 0);
+
+  function postToBackend(action, data) {
+    fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ token, action, ...data }),
+    }).catch(err => console.error("Erreur de sauvegarde", err));
+  }
+
+  const [tab, setTab] = useState("presence");
+  const defaultDateIdx = (() => {
+    const today = new Date().toISOString().slice(0, 10);
+    let bestIdx = 0, bestDiff = Infinity;
+    DATES.forEach((d, i) => {
+      const diff = Math.abs(new Date(d) - new Date(today));
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    });
+    return bestIdx;
+  })();
+  const [dateIdx, setDateIdx] = useState(defaultDateIdx);
+  const [viewMode, setViewMode] = useState("grille"); // "grille" | "jour"
+  const [commentModal, setCommentModal] = useState(null); // {stagId, date, creneau, text}
+  const [presences, setPresences] = useState(initialPresences); // key -> {statut, commentaire}
+  const [rangeFrom, setRangeFrom] = useState(DATES[0]);
+  const [rangeTo, setRangeTo] = useState(DATES[DATES.length - 1]);
+    const [contacts, setContacts] = useState(initialContacts);
+    const [contrats, setContrats] = useState(initialContrats);
+  const [previewMail, setPreviewMail] = useState(null); // {to, cc, subject, body}
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const [testMode, setTestMode] = useState(true);
+  const [testEmail, setTestEmail] = useState("agodart@hdfbasket.org");
+  const [selectedIds, setSelectedIds] = useState(() => STAGIAIRES.map(s => s.id));
+
+  const currentDate = DATES[dateIdx];
+  const slotsForDay = useMemo(() => SLOTS.filter(s => s.date === currentDate), [currentDate]);
+
+  // Fenêtre par défaut de la vue grille : 30 derniers jours + 15 prochains jours
+  function defaultGridRange() {
+    const today = new Date();
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const from = new Date(today); from.setDate(from.getDate() - 30);
+    const to = new Date(today); to.setDate(to.getDate() + 15);
+    let f = iso(from), t = iso(to);
+    if (f < DATES[0]) f = DATES[0];
+    if (t > DATES[DATES.length - 1]) t = DATES[DATES.length - 1];
+    if (f > DATES[DATES.length - 1]) f = DATES[0]; // hors saison : on retombe sur le début
+    if (t < DATES[0]) t = DATES[DATES.length - 1] < DATES[0] ? DATES[0] : DATES[Math.min(20, DATES.length - 1)];
+    return { from: f, to: t };
+  }
+  const [gridRange, setGridRange] = useState(defaultGridRange);
+  const gridSlots = useMemo(() => SLOTS.filter(s => s.date >= gridRange.from && s.date <= gridRange.to), [gridRange]);
+
+  // Numéro de semaine (lundi de la semaine) pour alterner la couleur des lignes par semaine
+  function mondayOf(dateIso) {
+    const d = new Date(dateIso + "T00:00:00");
+    const day = (d.getDay() + 6) % 7; // 0 = lundi
+    d.setDate(d.getDate() - day);
+    return d.toISOString().slice(0, 10);
+  }
+  const weekStripe = useMemo(() => {
+    const map = {};
+    let lastWeek = null, flip = false;
+    gridSlots.forEach(slot => {
+      const wk = mondayOf(slot.date);
+      if (wk !== lastWeek) { flip = !flip; lastWeek = wk; }
+      map[`${slot.date}_${slot.creneau}`] = flip;
+    });
+    return map;
+  }, [gridSlots]);
+
+  const key = (stagId, date, creneau) => `${stagId}__${date}__${creneau}`;
+  const getEntry = (stagId, date, creneau) => presences[key(stagId, date, creneau)] || { statut: "Présent", commentaire: "" };
+  const setStatut = (stagId, date, creneau, statut) => {
+    const k = key(stagId, date, creneau);
+    const commentaire = (presences[k] && presences[k].commentaire) || "";
+    setPresences(prev => ({ ...prev, [k]: { statut, commentaire } }));
+    postToBackend("updatePresence", { stagiaireId: stagId, date, creneau, statut, motif: commentaire });
+  };
+  const setCommentaire = (stagId, date, creneau, commentaire) => {
+    const k = key(stagId, date, creneau);
+    const statut = (presences[k] && presences[k].statut) || "Présent";
+    setPresences(prev => ({ ...prev, [k]: { statut, commentaire } }));
+    postToBackend("updatePresence", { stagiaireId: stagId, date, creneau, statut, motif: commentaire });
+  };
+
+  // Récapitulatif : % AI = heures AI / heures prévues pour CE stagiaire, sur la durée réelle de son contrat
+  // (de sa date d'entrée à sa date de fin si renseignée) — pas un dénominateur fixe de 600h,
+  // pour ne pas pénaliser un stagiaire arrivé en cours de route ou parti avant la fin.
+  const recap = useMemo(() => {
+    return STAGIAIRES.map(st => {
+      const contrat = contrats[st.id] || { dateEntree: st.dateEntree, dateFin: "" };
+      const dansContrat = (date) => date >= contrat.dateEntree && (!contrat.dateFin || date <= contrat.dateFin);
+
+      let heuresPrevuesPeriode = 0, heuresAJPeriode = 0, heuresAIPeriode = 0, heuresArretPeriode = 0;
+      let heuresPrevuesContrat = 0, heuresAIContrat = 0;
+      let dernierAbsenceAI = null;
+      SLOTS.forEach(slot => {
+        if (!dansContrat(slot.date)) return;
+        const statut = getEntry(st.id, slot.date, slot.creneau).statut;
+        heuresPrevuesContrat += slot.heures;
+        if (statut === "Absent AI") {
+          heuresAIContrat += slot.heures;
+          if (!dernierAbsenceAI || slot.date > dernierAbsenceAI) dernierAbsenceAI = slot.date;
+        }
+        if (slot.date < rangeFrom || slot.date > rangeTo) return;
+        heuresPrevuesPeriode += slot.heures;
+        if (statut === "Absent AJ") heuresAJPeriode += slot.heures;
+        else if (statut === "Absent AI") heuresAIPeriode += slot.heures;
+        else if (statut === "Arrêt de travail") heuresArretPeriode += slot.heures;
+      });
+      const pctAIAnnuel = heuresPrevuesContrat > 0 ? (heuresAIContrat / heuresPrevuesContrat) * 100 : 0;
+      return {
+        ...st, heuresPrevuesPeriode, heuresFactureesPeriode: heuresPrevuesPeriode,
+        heuresAJPeriode, heuresAIPeriode, heuresArretPeriode,
+        heuresPrevuesContrat, heuresAIContrat, pctAIAnnuel, dernierAbsenceAI,
+      };
+    });
+  }, [presences, rangeFrom, rangeTo, contrats]);
+
+  // Détail des dates d'absence par stagiaire, sur la période sélectionnée — c'est ce qui intéresse l'employeur
+  const detailAbsences = useMemo(() => {
+    const out = {};
+    STAGIAIRES.forEach(st => {
+      const contrat = contrats[st.id] || { dateEntree: st.dateEntree, dateFin: "" };
+      const dansContrat = (date) => date >= contrat.dateEntree && (!contrat.dateFin || date <= contrat.dateFin);
+      const rows = [];
+      SLOTS.forEach(slot => {
+        if (slot.date < rangeFrom || slot.date > rangeTo) return;
+        if (!dansContrat(slot.date)) return;
+        const entry = getEntry(st.id, slot.date, slot.creneau);
+        if (entry.statut === "Présent") return;
+        rows.push({ date: slot.date, creneau: slot.creneau, modalite: slot.modalite, statut: entry.statut, commentaire: entry.commentaire });
+      });
+      out[st.id] = rows.sort((a, b) => a.date.localeCompare(b.date));
+    });
+    return out;
+  }, [presences, rangeFrom, rangeTo, contrats]);
+
+  const toggleSelected = (id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const selectedStagiaires = STAGIAIRES.filter(s => selectedIds.includes(s.id));
+
+  function buildAbsenceMail(st, dateAbsence) {
+    const contact = contacts[st.id];
+    const jourDate = formatDateFR(dateAbsence);
+    const subject = "IRFBB - BPJEPS Basketball - notification d'absence stagiaire";
+    const body = `Bonjour,
+
+Je vous informe que votre stagiaire ${st.prenom} ${st.nom} ne s'est pas présenté(e) ${jourDate.toLowerCase().includes("lundi") || jourDate.toLowerCase().includes("mardi") || jourDate.toLowerCase().includes("mercredi") || jourDate.toLowerCase().includes("jeudi") || jourDate.toLowerCase().includes("vendredi") ? "ce" : "le"} ${jourDate} pour suivre sa journée de formation.
+
+Nous n'avons reçu aucun justificatif légitimant cette absence. Conformément à nos procédures, nous vous remercions de bien vouloir :
+
+- nous transmettre, si nécessaire, le justificatif d'absence correspondant,
+- et veiller à ce que la présence de l'apprenti(e) soit assurée aux prochaines séances.
+
+Pour rappel : toute absence peut entraîner une retenue sur salaire.
+Je me tiens à votre disposition si besoin et vous souhaite une bonne journée,
+
+Bien cordialement`;
+    const to = contact.club || "";
+    const cc = [contact.maitre, contact.respSession, contact.geiqpsalActif ? contact.geiqpsal : ""].filter(Boolean).join(",");
+    return applyTestMode({ to, cc, subject, body });
+  }
+
+  function buildAlertMail(st) {
+    const contact = contacts[st.id];
+    const subject = "IRFBB - BPJEPS Basketball - taux d'absence";
+    const body = `Bonjour,
+
+Nous souhaitons attirer votre attention sur la situation de ${st.prenom} ${st.nom}, qui présente actuellement un taux d'absence préoccupant (${recap.find(r => r.id === st.id).pctAIAnnuel.toFixed(1)}%), lié à plusieurs absences injustifiées ainsi qu'à des devoirs non rendus dans le cadre de sa formation BPJEPS Basketball.
+
+Conformément à notre règlement intérieur, un taux d'absences injustifiées supérieur à 5 % est susceptible de compromettre la présentation du candidat aux épreuves de certification.
+
+Nous comptons sur votre appui afin de sensibiliser ${st.prenom} à l'importance de respecter les échéances et d'assurer un suivi rigoureux de son parcours de formation.
+
+Si des difficultés particulières venaient à entraver la réalisation de ses devoirs ou son assiduité aux temps de formation, nous restons bien entendu disponibles pour en échanger et envisager ensemble des solutions adaptées.
+
+Bien cordialement,`;
+    const to = contact.club || "";
+    const cc = [contact.maitre, contact.respSession, contact.geiqpsalActif ? contact.geiqpsal : ""].filter(Boolean).join(",");
+    return applyTestMode({ to, cc, subject, body });
+  }
+
+  // Mode test : redirige TOUT (à + copie) vers une seule adresse de test, pour ne jamais risquer d'écrire aux vrais contacts
+  function applyTestMode(mail) {
+    if (!testMode) return mail;
+    return {
+      to: testEmail || "(renseigne ton adresse de test ci-dessous)",
+      cc: "",
+      subject: `[TEST] ${mail.subject}`,
+      body: `⚠️ MODE TEST — destinataires réels : À "${mail.to || "—"}", Copie "${mail.cc || "—"}"\n\n${mail.body}`,
+    };
+  }
+
+  function openInMailClient(mail) {
+    const params = new URLSearchParams();
+    if (mail.cc) params.set("cc", mail.cc);
+    params.set("subject", mail.subject);
+    params.set("body", mail.body);
+    const url = `mailto:${mail.to || ""}?${params.toString()}`;
+    // window.open en secours si la navigation directe est bloquée (aperçu en bac à sable)
+    const w = window.open(url, "_blank");
+    if (!w) window.location.href = url;
+  }
+
+  function copyMailToClipboard(mail) {
+    const text = `À : ${mail.to || "(à compléter)"}\nCopie : ${mail.cc || "—"}\nObjet : ${mail.subject}\n\n${mail.body}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    });
+  }
+
+  function exportRecapHTML() {
+    const rows = selectedStagiaires.map(st => {
+      const r = recap.find(x => x.id === st.id);
+      const absences = detailAbsences[st.id] || [];
+      const tableRows = absences.length
+        ? absences.map(a => `<tr>
+            <td>${formatDateFR(a.date)}</td><td>${a.creneau}</td><td>${a.modalite}</td>
+            <td><span class="tag tag-${a.statut.replace(/\s/g, '')}">${a.statut}</span></td>
+            <td>${a.commentaire || "—"}</td></tr>`).join("")
+        : `<tr><td colspan="5" class="empty">Aucune absence sur la période sélectionnée.</td></tr>`;
+      return `
+        <h3>${st.nom} ${st.prenom}</h3>
+        <p class="meta">Heures période : ${r.heuresFactureesPeriode}h · AJ : ${r.heuresAJPeriode}h · AI : ${r.heuresAIPeriode}h · Arrêt : ${r.heuresArretPeriode}h · % AI (contrat) : ${r.pctAIAnnuel.toFixed(1)}%</p>
+        <table>
+          <thead><tr><th>Date</th><th>Créneau</th><th>Modalité</th><th>Statut</th><th>Commentaire</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>`;
+    }).join("");
+
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+      <title>Récapitulatif absences — BPJEPS Saint-Quentin</title>
+      <style>
+        body { font-family: Arial, Helvetica, sans-serif; color: #2C2E2B; margin: 40px; }
+        h1 { font-size: 20px; margin-bottom: 2px; }
+        .subtitle { font-size: 12px; color: #666; margin-bottom: 28px; }
+        h3 { font-size: 15px; margin-top: 26px; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+        .meta { font-size: 12px; color: #555; margin: 4px 0 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 8px; }
+        th { background: #3A4A35; color: #fff; text-align: left; padding: 6px 8px; }
+        td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+        .empty { color: #999; font-style: italic; }
+        .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .tag-PrésentAJ, .tag-AbsentAJ { background: #FBF1DE; color: #9C7A29; }
+        .tag-AbsentAI { background: #FBE9E4; color: #B3502F; }
+        .tag-Arrêtdetravail { background: #EDEBF4; color: #5B4E8C; }
+        @media print { body { margin: 15mm; } }
+      </style></head>
+      <body>
+        <h1>Récapitulatif des absences — BPJEPS Saint-Quentin</h1>
+        <div class="subtitle">Période du ${formatDateShort(rangeFrom)}/${rangeFrom.slice(0,4)} au ${formatDateShort(rangeTo)}/${rangeTo.slice(0,4)} — édité le ${new Date().toLocaleDateString("fr-FR")}</div>
+        ${rows || '<p class="empty">Aucun stagiaire sélectionné.</p>'}
+      </body></html>`;
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `recap-absences-${rangeFrom}_${rangeTo}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const stagiairesEnAlerte = recap.filter(r => r.pctAIAnnuel >= SEUIL_ALERTE_PCT);
+
+  return (
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", background: "#F7F5F0", minHeight: "100%", color: "#2C2E2B" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+        .pf { font-family: 'Playfair Display', serif; }
+        * { box-sizing: border-box; }
+        button { cursor: pointer; font-family: inherit; }
+        select, input { font-family: inherit; }
+        @media print {
+          .no-print { display: none !important; }
+          .print-only-block { display: block !important; }
+          body { background: #fff !important; }
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="no-print" style={{ background: "#3A4A35", color: "#F7F5F0", padding: "20px 24px" }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7, marginBottom: 4 }}>
+          IRFBB Hauts-de-France
+        </div>
+        <h1 className="pf" style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>
+          Assiduité - BPJEPS Saint-Quentin
+        </h1>
+        <div style={{ fontSize: 13, opacity: 0.75, marginTop: 4 }}>
+          Session 17/08/2026 → 16/08/2027 · {TOTAL_HEURES_ANNUELLES}h de formation · {STAGIAIRES.length} stagiaires
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="no-print" style={{ display: "flex", gap: 4, padding: "12px 24px 0", background: "#F7F5F0", borderBottom: "1px solid #E3DDD1" }}>
+        {[
+          { id: "presence", label: "État des présences", icon: "📅" },
+          { id: "recap", label: "Récapitulatif", icon: "📊" },
+          { id: "contacts", label: "Notifications", icon: "✉️" },
+        ].map(t => {
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "10px 16px", border: "none", background: "transparent",
+                borderBottom: active ? "2px solid #6B8068" : "2px solid transparent",
+                color: active ? "#3A4A35" : "#8A8577",
+                fontWeight: active ? 600 : 500, fontSize: 14,
+              }}>
+              {t.icon} {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ padding: 24 }}>
+        {tab === "presence" && (
+          <div>
+            <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+              <button onClick={() => setViewMode("grille")}
+                style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  border: viewMode === "grille" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+                  background: viewMode === "grille" ? "#E9EFE6" : "#fff", color: viewMode === "grille" ? "#4A6741" : "#8A8577" }}>
+                Vue grille
+              </button>
+              <button onClick={() => setViewMode("jour")}
+                style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  border: viewMode === "jour" ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+                  background: viewMode === "jour" ? "#E9EFE6" : "#fff", color: viewMode === "jour" ? "#4A6741" : "#8A8577" }}>
+                Vue par jour
+              </button>
+              {viewMode === "grille" && (
+                <>
+                  <span style={{ width: 1, height: 20, background: "#E3DDD1", margin: "0 4px" }} />
+                  <label style={{ fontSize: 12, color: "#8A8577" }}>Du</label>
+                  <input type="date" value={gridRange.from} min={DATES[0]} max={gridRange.to}
+                    onChange={e => setGridRange(r => ({ ...r, from: e.target.value }))}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                  <label style={{ fontSize: 12, color: "#8A8577" }}>au</label>
+                  <input type="date" value={gridRange.to} min={gridRange.from} max={DATES[DATES.length - 1]}
+                    onChange={e => setGridRange(r => ({ ...r, to: e.target.value }))}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                  <button onClick={() => setGridRange(defaultGridRange())}
+                    style={{ fontSize: 12, padding: "6px 10px", borderRadius: 6, border: "1px solid #E3DDD1", background: "#fff", color: "#8A8577" }}>
+                    30j / +15j
+                  </button>
+                  <button onClick={() => setGridRange({ from: DATES[0], to: DATES[DATES.length - 1] })}
+                    style={{ fontSize: 12, padding: "6px 10px", borderRadius: 6, border: "1px solid #E3DDD1", background: "#fff", color: "#8A8577" }}>
+                    Année complète
+                  </button>
+                </>
+              )}
+            </div>
+
+            {viewMode === "grille" && (
+              <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", overflow: "auto" }}>
+                <table style={{ borderCollapse: "collapse", fontSize: 12, minWidth: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ position: "sticky", left: 0, background: "#3A4A35", color: "#fff", padding: "8px 10px", textAlign: "left", zIndex: 2, minWidth: 130 }}>Date / créneau</th>
+                      {STAGIAIRES.map(st => (
+                        <th key={st.id} style={{ background: "#3A4A35", color: "#fff", padding: "8px 8px", fontWeight: 600, minWidth: 100, textAlign: "center" }}>
+                          {st.nom}<br /><span style={{ fontWeight: 400, opacity: 0.8 }}>{st.prenom}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gridSlots.length === 0 && (
+                      <tr><td colSpan={STAGIAIRES.length + 1} style={{ padding: 20, textAlign: "center", color: "#8A8577", fontSize: 13 }}>
+                        Aucun créneau de formation sur cette période.
+                      </td></tr>
+                    )}
+                    {gridSlots.map((slot, ri) => {
+                      const striped = weekStripe[`${slot.date}_${slot.creneau}`];
+                      const rowBg = striped ? "#F3F1E9" : "#fff";
+                      return (
+                      <tr key={ri} style={{ borderTop: "1px solid #F0EEE6", background: rowBg }}>
+                        <td style={{ position: "sticky", left: 0, background: rowBg, padding: "6px 10px", fontWeight: 500, whiteSpace: "nowrap", borderRight: "1px solid #F0EEE6" }}>
+                          {formatDateShort(slot.date)} <span style={{ fontSize: 10, fontWeight: 700, background: "#F0EEE6", padding: "1px 5px", borderRadius: 8, marginLeft: 4 }}>{slot.creneau}</span>
+                          <div style={{ fontSize: 10, color: "#8A8577" }}>{slot.modalite} · {slot.heures}h</div>
+                        </td>
+                        {STAGIAIRES.map(st => {
+                          const contrat = contrats[st.id] || { dateEntree: st.dateEntree, dateFin: "" };
+                          const notYet = slot.date < contrat.dateEntree || (contrat.dateFin && slot.date > contrat.dateFin);
+                          const entry = getEntry(st.id, slot.date, slot.creneau);
+                          const sStyle = STATUT_STYLE[entry.statut];
+                          if (notYet) {
+                            return <td key={st.id} style={{ padding: "4px 6px", textAlign: "center", color: "#C6C2B6", fontSize: 11 }}>—</td>;
+                          }
+                          return (
+                            <td key={st.id} style={{ padding: "4px 6px", textAlign: "center" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3, justifyContent: "center" }}>
+                                <select value={entry.statut} onChange={e => setStatut(st.id, slot.date, slot.creneau, e.target.value)}
+                                  style={{
+                                    fontSize: 11, padding: "4px 3px", borderRadius: 6, border: `1px solid ${sStyle.dot}`,
+                                    background: sStyle.bg, color: sStyle.fg, fontWeight: 600, width: 92,
+                                  }}>
+                                  {STATUTS.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                                <button onClick={() => setCommentModal({ stagId: st.id, date: slot.date, creneau: slot.creneau, text: entry.commentaire })}
+                                  title={entry.commentaire ? entry.commentaire : "Ajouter un commentaire"}
+                                  style={{
+                                    width: 18, height: 18, borderRadius: 4, border: "1px solid #E3DDD1",
+                                    background: entry.commentaire ? "#3A4A35" : "#fff", color: entry.commentaire ? "#fff" : "#C6C2B6",
+                                    fontSize: 10, lineHeight: "16px", padding: 0, flexShrink: 0,
+                                  }}>
+                                  ✎
+                                </button>
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {viewMode === "jour" && (
+            <div>
+            <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+              <button onClick={() => setDateIdx(i => Math.max(0, i - 1))} disabled={dateIdx === 0}
+                style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", opacity: dateIdx === 0 ? 0.4 : 1 }}>
+                ‹
+              </button>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <div className="pf" style={{ fontSize: 19, fontWeight: 700, textTransform: "capitalize" }}>
+                  {formatDateLong(currentDate)}
+                </div>
+                <div style={{ fontSize: 12, color: "#8A8577", marginTop: 2 }}>
+                  Période {slotsForDay[0] && slotsForDay[0].periode} · {dateIdx + 1} / {DATES.length} jours de formation
+                </div>
+              </div>
+              <button onClick={() => setDateIdx(i => Math.min(DATES.length - 1, i + 1))} disabled={dateIdx === DATES.length - 1}
+                style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", opacity: dateIdx === DATES.length - 1 ? 0.4 : 1 }}>
+                ›
+              </button>
+              <select value={currentDate} onChange={e => setDateIdx(DATES.indexOf(e.target.value))}
+                style={{ marginLeft: 8, padding: "8px 10px", borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", fontSize: 13 }}>
+                {DATES.map(d => <option key={d} value={d}>{formatDateShort(d)}</option>)}
+              </select>
+              <button onClick={() => setDateIdx(defaultDateIdx)}
+                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", fontSize: 12, color: "#8A8577" }}>
+                Aujourd'hui
+              </button>
+            </div>
+
+            {slotsForDay.map((slot, si) => (
+              <div key={si} style={{ marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, background: "#3A4A35", color: "#fff", padding: "3px 9px", borderRadius: 12 }}>
+                    {slot.creneau}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#4A4A42" }}>{slot.modalite}</span>
+                  <span style={{ fontSize: 12, color: "#8A8577" }}>· {slot.heures}h</span>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", overflow: "hidden" }}>
+                  {STAGIAIRES.map((st, i) => {
+                    const contrat = contrats[st.id] || { dateEntree: st.dateEntree, dateFin: "" };
+                    const notYet = slot.date < contrat.dateEntree || (contrat.dateFin && slot.date > contrat.dateFin);
+                    const entry = getEntry(st.id, slot.date, slot.creneau);
+                    return (
+                      <div key={st.id} style={{
+                        display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                        borderBottom: i < STAGIAIRES.length - 1 ? "1px solid #F0EEE6" : "none",
+                        opacity: notYet ? 0.4 : 1,
+                      }}>
+                        <div style={{ width: 170, fontSize: 13, fontWeight: 500 }}>{st.nom} {st.prenom}</div>
+                        {notYet ? (
+                          <span style={{ fontSize: 12, color: "#8A8577", fontStyle: "italic" }}>
+                            {slot.date < (contrats[st.id] || {}).dateEntree ? "Pas encore sous contrat" : "Contrat terminé"}
+                          </span>
+                        ) : (
+                          <>
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                              {STATUTS.map(s => {
+                                const sStyle = STATUT_STYLE[s];
+                                const isActive = entry.statut === s;
+                                return (
+                                  <button key={s} onClick={() => setStatut(st.id, slot.date, slot.creneau, s)}
+                                    style={{
+                                      fontSize: 12, padding: "5px 10px", borderRadius: 20,
+                                      border: isActive ? `1.5px solid ${sStyle.dot}` : "1px solid #E3DDD1",
+                                      background: isActive ? sStyle.bg : "#fff",
+                                      color: isActive ? sStyle.fg : "#8A8577",
+                                      fontWeight: isActive ? 600 : 400,
+                                    }}>
+                                    {s}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <input placeholder="Commentaire (optionnel)" value={entry.commentaire}
+                              onChange={e => setCommentaire(st.id, slot.date, slot.creneau, e.target.value)}
+                              style={{ marginLeft: "auto", fontSize: 12, padding: "6px 10px", borderRadius: 6, border: "1px solid #E3DDD1", width: 200 }} />
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            </div>
+            )}
+          </div>
+        )}
+
+        {tab === "recap" && (
+          <div>
+            <div className="no-print" style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+              <div>
+                <div className="pf" style={{ fontSize: 19, fontWeight: 700 }}>Récapitulatif par stagiaire</div>
+                <div style={{ fontSize: 13, color: "#8A8577", marginTop: 2 }}>
+                  % AI = heures d'absences injustifiées ÷ heures prévues sur la durée réelle du contrat de chaque stagiaire
+                </div>
+              </div>
+              <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+                <label style={{ fontSize: 12, color: "#8A8577" }}>Période export :</label>
+                <input type="date" value={rangeFrom} min={DATES[0]} max={rangeTo}
+                  onChange={e => setRangeFrom(e.target.value)}
+                  style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                <span style={{ fontSize: 12, color: "#8A8577" }}>→</span>
+                <input type="date" value={rangeTo} min={rangeFrom} max={DATES[DATES.length - 1]}
+                  onChange={e => setRangeTo(e.target.value)}
+                  style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                <button onClick={exportRecapHTML}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "none", background: "#3A4A35", color: "#fff", fontSize: 13, fontWeight: 600 }}>
+                  🖨️ Exporter (à imprimer en PDF)
+                </button>
+              </div>
+            </div>
+
+            <div className="no-print" style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Stagiaires à inclure dans l'export</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+                <button onClick={() => setSelectedIds(STAGIAIRES.map(s => s.id))}
+                  style={{ fontSize: 11, padding: "4px 9px", borderRadius: 20, border: "1px solid #E3DDD1", background: "#fff", color: "#8A8577" }}>Tous</button>
+                <button onClick={() => setSelectedIds([])}
+                  style={{ fontSize: 11, padding: "4px 9px", borderRadius: 20, border: "1px solid #E3DDD1", background: "#fff", color: "#8A8577" }}>Aucun</button>
+                {STAGIAIRES.map(st => {
+                  const active = selectedIds.includes(st.id);
+                  return (
+                    <button key={st.id} onClick={() => toggleSelected(st.id)}
+                      style={{
+                        fontSize: 12, padding: "5px 10px", borderRadius: 20,
+                        border: active ? "1.5px solid #6B8068" : "1px solid #E3DDD1",
+                        background: active ? "#E9EFE6" : "#fff",
+                        color: active ? "#4A6741" : "#8A8577",
+                        fontWeight: active ? 600 : 400,
+                      }}>
+                      {st.nom} {st.prenom}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", overflow: "hidden", marginBottom: 20 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: "#3A4A35", color: "#fff" }}>
+                    {["Stagiaire", "Heures période", "AJ (période)", "AI (période)", "Arrêt (période)", "% AI (sur son contrat)"].map(h => (
+                      <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, fontSize: 12 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recap.filter(r => selectedIds.includes(r.id)).map((r, i) => (
+                    <tr key={r.id} style={{ borderTop: i > 0 ? "1px solid #F0EEE6" : "none" }}>
+                      <td style={{ padding: "10px 12px", fontWeight: 500 }}>{r.nom} {r.prenom}</td>
+                      <td style={{ padding: "10px 12px" }}>{r.heuresFactureesPeriode}h</td>
+                      <td style={{ padding: "10px 12px" }}>{r.heuresAJPeriode}h</td>
+                      <td style={{ padding: "10px 12px" }}>{r.heuresAIPeriode}h</td>
+                      <td style={{ padding: "10px 12px" }}>{r.heuresArretPeriode}h</td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span style={{
+                          padding: "3px 9px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                          background: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#FBE9E4" : "#E9EFE6",
+                          color: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#B3502F" : "#4A6741",
+                        }}>
+                          {r.pctAIAnnuel.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <details className="no-print" style={{ marginBottom: 16, background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", padding: "12px 16px" }}>
+              <summary style={{ fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Durée de contrat par stagiaire</summary>
+              <div style={{ fontSize: 12, color: "#8A8577", margin: "8px 0" }}>
+                À renseigner pour un stagiaire arrivé après le démarrage ou parti avant la fin — laisser "date de fin" vide sinon.
+              </div>
+              <div style={{ borderRadius: 10, border: "1px solid #E3DDD1", overflow: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#3A4A35", color: "#fff" }}>
+                      {["Stagiaire", "Date d'entrée", "Date de fin (si abandon)"].map(h => (
+                        <th key={h} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {STAGIAIRES.map((st, i) => {
+                      const c = contrats[st.id];
+                      const update = (field, value) => {
+                        const merged = { ...c, [field]: value };
+                        setContrats(prev => ({ ...prev, [st.id]: merged }));
+                        postToBackend("updateContrat", { stagiaireId: st.id, dateEntree: merged.dateEntree, dateFin: merged.dateFin });
+                      };
+                      return (
+                        <tr key={st.id} style={{ borderTop: i > 0 ? "1px solid #F0EEE6" : "none" }}>
+                          <td style={{ padding: "8px 10px", fontWeight: 500 }}>{st.nom} {st.prenom}</td>
+                          <td style={{ padding: "6px 8px" }}>
+                            <input type="date" value={c.dateEntree} min={DATES[0]} max={DATES[DATES.length - 1]}
+                              onChange={e => update("dateEntree", e.target.value)}
+                              style={{ padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                          </td>
+                          <td style={{ padding: "6px 8px" }}>
+                            <input type="date" value={c.dateFin} min={c.dateEntree} max={DATES[DATES.length - 1]}
+                              onChange={e => update("dateFin", e.target.value)}
+                              style={{ padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+
+            {/* Détail des dates d'absence par stagiaire — ce qui intéresse réellement l'employeur */}
+            <details className="no-print" style={{ background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", padding: "12px 16px" }}>
+              <summary className="pf" style={{ fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Détail des absences par date</summary>
+              <div style={{ marginTop: 12 }}>
+              {selectedStagiaires.map(st => {
+                const rows = detailAbsences[st.id] || [];
+                return (
+                  <div key={st.id} style={{ marginBottom: 18, breakInside: "avoid" }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{st.nom} {st.prenom}</div>
+                    {rows.length === 0 ? (
+                      <div style={{ fontSize: 12, color: "#8A8577", fontStyle: "italic" }}>Aucune absence sur la période sélectionnée.</div>
+                    ) : (
+                      <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #E3DDD1", overflow: "hidden" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                          <thead>
+                            <tr style={{ background: "#F0EEE6" }}>
+                              {["Date", "Créneau", "Modalité", "Statut", "Commentaire"].map(h => (
+                                <th key={h} style={{ padding: "6px 10px", textAlign: "left", fontWeight: 600, color: "#4A4A42" }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((row, i) => (
+                              <tr key={i} style={{ borderTop: i > 0 ? "1px solid #F0EEE6" : "none" }}>
+                                <td style={{ padding: "6px 10px" }}>{formatDateFR(row.date)}</td>
+                                <td style={{ padding: "6px 10px" }}>{row.creneau}</td>
+                                <td style={{ padding: "6px 10px" }}>{row.modalite}</td>
+                                <td style={{ padding: "6px 10px" }}>
+                                  <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: STATUT_STYLE[row.statut].bg, color: STATUT_STYLE[row.statut].fg }}>
+                                    {row.statut}
+                                  </span>
+                                </td>
+                                <td style={{ padding: "6px 10px", color: "#8A8577" }}>{row.commentaire || "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            </details>
+            {stagiairesEnAlerte.length > 0 && (
+              <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 12, color: "#B3502F" }}>
+                ⚠️ {stagiairesEnAlerte.length} stagiaire(s) au-dessus du seuil d'alerte ({SEUIL_ALERTE_PCT}% d'AI annuel) — voir l'onglet Notifications.
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "contacts" && (
+          <div>
+            <div className="pf" style={{ fontSize: 19, fontWeight: 700, marginBottom: 4 }}>Notifications d'absence</div>
+            <div style={{ fontSize: 13, color: "#8A8577", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
+              🔒 L'envoi réel se fera via Apps Script (accès restreint à certaines adresses) une fois connecté à Google Sheets.
+              Ici : tu prépares le mail, tu le relis, puis tu l'ouvres dans Outlook pour l'envoyer toi-même.
+            </div>
+
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 10, marginBottom: 20,
+              background: testMode ? "#FBF1DE" : "#FBE9E4", border: `1px solid ${testMode ? "#D9A73D" : "#C97B5F"}`,
+            }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: testMode ? "#9C7A29" : "#B3502F", cursor: "pointer" }}>
+                <input type="checkbox" checked={testMode} onChange={e => setTestMode(e.target.checked)} />
+                Mode test actif
+              </label>
+              {testMode ? (
+                <>
+                  <span style={{ fontSize: 12, color: "#9C7A29" }}>Tous les mails générés partent vers cette adresse à la place des vrais contacts :</span>
+                  <input type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)} placeholder="tonadresse@hdfbasket.org"
+                    style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #D9A73D", fontSize: 12, minWidth: 220 }} />
+                </>
+              ) : (
+                <span style={{ fontSize: 12, color: "#B3502F", fontWeight: 600 }}>
+                  ⚠️ Désactivé — les mails partiront vers les vraies adresses des contacts. À n'utiliser qu'en production.
+                </span>
+              )}
+            </div>
+
+            {stagiairesEnAlerte.length > 0 && (
+              <div style={{ marginTop: 20, marginBottom: 24 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#B3502F" }}>
+                  Alertes seuil ({SEUIL_ALERTE_PCT}% d'AI annuel atteint)
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {stagiairesEnAlerte.map(r => (
+                    <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #E3DDD1", borderRadius: 8, padding: "10px 14px" }}>
+                      <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{r.nom} {r.prenom}</div>
+                      <div style={{ fontSize: 12, color: "#B3502F", fontWeight: 600 }}>{r.pctAIAnnuel.toFixed(1)}% AI</div>
+                      <button onClick={() => setPreviewMail(buildAlertMail(r))}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6, border: "1px solid #B3502F", background: "#fff", color: "#B3502F", fontSize: 12, fontWeight: 600 }}>
+                        ✉️ Préparer l'alerte
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: 20, marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Notifier une absence ponctuelle</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+              {STAGIAIRES.map(st => {
+                const r = recap.find(x => x.id === st.id);
+                return (
+                  <div key={st.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #E3DDD1", borderRadius: 8, padding: "10px 14px" }}>
+                    <div style={{ width: 170, fontSize: 13, fontWeight: 500 }}>{st.nom} {st.prenom}</div>
+                    <div style={{ fontSize: 12, color: "#8A8577" }}>
+                      {r.dernierAbsenceAI ? `Dernière AI : ${formatDateShort(r.dernierAbsenceAI)}` : "Aucune absence injustifiée"}
+                    </div>
+                    <button disabled={!r.dernierAbsenceAI} onClick={() => setPreviewMail(buildAbsenceMail(st, r.dernierAbsenceAI))}
+                      style={{
+                        marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6,
+                        border: "1px solid #6B8068", background: "#fff", color: r.dernierAbsenceAI ? "#4A6741" : "#C6C2B6",
+                        fontSize: 12, fontWeight: 600, cursor: r.dernierAbsenceAI ? "pointer" : "not-allowed",
+                      }}>
+                      ✉️ Préparer le mail
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Contacts par stagiaire</div>
+            <div style={{ fontSize: 12, color: "#8A8577", marginBottom: 8 }}>
+              Le GEIQPSAL n'est mis en copie que si la case est cochée (ça dépend du stagiaire).
+            </div>
+            <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #E3DDD1", overflow: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: "#3A4A35", color: "#fff" }}>
+                    {["Stagiaire", "Email club", "Email maître d'apprentissage", "Email resp. session", "GEIQPSAL en copie ?", "Email GEIQPSAL"].map(h => (
+                      <th key={h} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {STAGIAIRES.map((st, i) => {
+                    const c = contacts[st.id];
+                    const fieldToColumn = {
+                      club: "Email club",
+                      maitre: "Email maître d'apprentissage",
+                      respSession: "Email resp. session",
+                      geiqpsal: "Email GEIQPSAL",
+                    };
+                    const update = (field, value) => {
+                      setContacts(prev => ({ ...prev, [st.id]: { ...prev[st.id], [field]: value } }));
+                      if (fieldToColumn[field]) {
+                        postToBackend("updateContact", { stagiaireId: st.id, field: fieldToColumn[field], value });
+                      }
+                    };
+                    return (
+                      <tr key={st.id} style={{ borderTop: i > 0 ? "1px solid #F0EEE6" : "none" }}>
+                        <td style={{ padding: "8px 10px", fontWeight: 500 }}>{st.nom} {st.prenom}</td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <input value={c.club} onChange={e => update("club", e.target.value)} placeholder="email@club.fr"
+                            style={{ width: "100%", padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                        </td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <input value={c.maitre} onChange={e => update("maitre", e.target.value)} placeholder="à compléter"
+                            style={{ width: "100%", padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                        </td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <input value={c.respSession} onChange={e => update("respSession", e.target.value)} placeholder="à compléter"
+                            style={{ width: "100%", padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12 }} />
+                        </td>
+                        <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                          <input type="checkbox" checked={c.geiqpsalActif} onChange={e => update("geiqpsalActif", e.target.checked)} />
+                        </td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <input value={c.geiqpsal} onChange={e => update("geiqpsal", e.target.value)} placeholder="à compléter" disabled={!c.geiqpsalActif}
+                            style={{ width: "100%", padding: "5px 7px", borderRadius: 5, border: "1px solid #E3DDD1", fontSize: 12, opacity: c.geiqpsalActif ? 1 : 0.5 }} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modale commentaire */}
+      {commentModal && (
+        <div className="no-print" onClick={() => setCommentModal(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(44,46,43,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, maxWidth: 420, width: "100%", padding: 24 }}>
+            <div className="pf" style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Commentaire</div>
+            <div style={{ fontSize: 12, color: "#8A8577", marginBottom: 12 }}>
+              {STAGIAIRES.find(s => s.id === commentModal.stagId).nom} {STAGIAIRES.find(s => s.id === commentModal.stagId).prenom} · {formatDateShort(commentModal.date)} {commentModal.creneau}
+            </div>
+            <textarea value={commentModal.text} onChange={e => setCommentModal({ ...commentModal, text: e.target.value })}
+              rows={4} autoFocus placeholder="Ex. : certificat médical reçu le..."
+              style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #E3DDD1", fontSize: 13, fontFamily: "inherit", resize: "vertical" }} />
+            <div style={{ display: "flex", gap: 8, marginTop: 12, justifyContent: "flex-end" }}>
+              <button onClick={() => setCommentModal(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", fontSize: 13 }}>Annuler</button>
+              <button onClick={() => { setCommentaire(commentModal.stagId, commentModal.date, commentModal.creneau, commentModal.text); setCommentModal(null); }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#3A4A35", color: "#fff", fontSize: 13, fontWeight: 600 }}>
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale prévisualisation mail */}
+      {previewMail && (
+        <div className="no-print" onClick={() => setPreviewMail(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(44,46,43,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, maxWidth: 560, width: "100%", maxHeight: "85vh", overflow: "auto", padding: 24 }}>
+            <div className="pf" style={{ fontSize: 17, fontWeight: 700, marginBottom: 12 }}>Aperçu du mail</div>
+            <div style={{ fontSize: 12, color: "#8A8577", marginBottom: 4 }}>À : {previewMail.to || <em>(email club à compléter)</em>}</div>
+            {previewMail.cc && <div style={{ fontSize: 12, color: "#8A8577", marginBottom: 4 }}>Copie : {previewMail.cc}</div>}
+            <div style={{ fontSize: 12, color: "#8A8577", marginBottom: 10 }}>Objet : {previewMail.subject}</div>
+            <textarea value={previewMail.body} onChange={e => setPreviewMail({ ...previewMail, body: e.target.value })}
+              rows={14} style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #E3DDD1", fontSize: 13, fontFamily: "inherit", resize: "vertical" }} />
+            <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end", alignItems: "center" }}>
+              {copyFeedback && <span style={{ fontSize: 12, color: "#4A6741", marginRight: "auto" }}>Copié !</span>}
+              <button onClick={() => setPreviewMail(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #E3DDD1", background: "#fff", fontSize: 13 }}>Fermer</button>
+              <button onClick={() => copyMailToClipboard(previewMail)}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #6B8068", background: "#fff", color: "#4A6741", fontSize: 13, fontWeight: 600 }}>
+                Copier le texte
+              </button>
+              <button onClick={() => openInMailClient(previewMail)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, border: "none", background: "#3A4A35", color: "#fff", fontSize: 13, fontWeight: 600 }}>
+                ➤ Ouvrir dans Outlook
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function parseDate(v) {
+  if (!v) return "";
+  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+  return v;
+}
+
+function buildInitialData(json) {
+  const stagiaires = json.stagiaires
+    .map(row => ({
+      id: Number(row["ID"]),
+      nom: row["Nom"] || "",
+      prenom: row["Prénom"] || "",
+      club: row["Club (structure d'accueil)"] || "",
+      dateEntree: parseDate(row["Date d'entrée en formation"]),
+      typeContrat: row["Type de contrat"] || "",
+    }))
+    .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+
+  const slots = json.planning.map(row => {
+    const m = String(row["Période"] || "").match(/\d+/);
+    return {
+      date: parseDate(row["Date"]),
+      jour: row["Jour"] || "",
+      creneau: row["Créneau"] || "",
+      heures: Number(row["Heures"]) || 0,
+      modalite: row["Modalité"] || "",
+      periode: m ? m[0] : "",
+    };
+  });
+
+  const presences = {};
+  json.presences.forEach(row => {
+    const k = `${row["ID stagiaire"]}__${parseDate(row["Date"])}__${row["Créneau"]}`;
+    presences[k] = {
+      statut: row["Statut"] || "Présent",
+      commentaire: row["Motif (si besoin)"] || "",
+    };
+  });
+
+  const contactsById = {};
+  (json.contacts || []).forEach(row => {
+    contactsById[row["ID stagiaire"]] = row;
+  });
+  const contacts = {};
+  stagiaires.forEach(st => {
+    const row = contactsById[st.id] || {};
+    const geiqpsal = row["Email GEIQPSAL"] || "";
+    contacts[st.id] = {
+      club: row["Email club"] || st.club || "",
+      maitre: row["Email maître d'apprentissage"] || "",
+      respSession: row["Email resp. session"] || "",
+      geiqpsal,
+      geiqpsalActif: !!geiqpsal || /GEIQPSAL/i.test(st.typeContrat),
+    };
+  });
+
+  const contrats = {};
+  const stagiairesById = {};
+  json.stagiaires.forEach(row => { stagiairesById[Number(row["ID"])] = row; });
+  stagiaires.forEach(st => {
+    const row = stagiairesById[st.id] || {};
+    contrats[st.id] = {
+      dateEntree: parseDate(row["Date d'entrée en formation"]),
+      dateFin: parseDate(row["Date de fin de contrat (si abandon)"]),
+    };
+  });
+
+  return { slots, stagiaires, presences, contacts, contrats };
+}
+
+function App() {
+  const [codeInput, setCodeInput] = useState("");
+  const [status, setStatus] = useState("login"); // "login" | "loading" | "ready" | "error"
+  const [errorMsg, setErrorMsg] = useState("");
+  const [data, setData] = useState(null);
+  const [token, setToken] = useState("");
+
+  function tryLogin(e) {
+    if (e) e.preventDefault();
+    setStatus("loading");
+    setErrorMsg("");
+    fetch(`${APPS_SCRIPT_URL}?token=${encodeURIComponent(codeInput)}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.error) {
+          setStatus("error");
+          setErrorMsg(json.error);
+          return;
+        }
+        setData(buildInitialData(json));
+        setToken(codeInput);
+        setStatus("ready");
+      })
+      .catch(err => {
+        setStatus("error");
+        setErrorMsg("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+      });
+  }
+
+  if (status === "ready" && data) {
+    return (
+      <Dashboard
+        initialSlots={data.slots}
+        initialStagiaires={data.stagiaires}
+        initialPresences={data.presences}
+        initialContacts={data.contacts}
+        initialContrats={data.contrats}
+        token={token}
+      />
+    );
+  }
+
+  return (
+    <div style={{
+      fontFamily: "'Inter', -apple-system, sans-serif", background: "#F7F5F0", minHeight: "100vh",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');`}</style>
+      <form onSubmit={tryLogin} style={{ background: "#fff", borderRadius: 14, padding: 32, maxWidth: 360, width: "100%", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#3A4A35", marginBottom: 4 }}>
+          Assiduité - BPJEPS Saint-Quentin
+        </div>
+        <div style={{ fontSize: 13, color: "#8A8577", marginBottom: 20 }}>IRFBB Hauts-de-France</div>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#4A4A42", display: "block", marginBottom: 6 }}>Code d'accès</label>
+        <input type="password" value={codeInput} onChange={e => setCodeInput(e.target.value)} autoFocus
+          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E3DDD1", fontSize: 14, marginBottom: 14 }} />
+        {status === "error" && (
+          <div style={{ fontSize: 12, color: "#B3502F", marginBottom: 14 }}>{errorMsg}</div>
+        )}
+        <button type="submit" disabled={status === "loading"}
+          style={{ width: "100%", padding: "10px 16px", borderRadius: 8, border: "none", background: "#3A4A35", color: "#fff", fontSize: 14, fontWeight: 600, opacity: status === "loading" ? 0.6 : 1 }}>
+          {status === "loading" ? "Connexion..." : "Entrer"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+</body>
+</html>

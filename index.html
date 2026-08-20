@@ -22,7 +22,7 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.2.1";
 const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
@@ -100,7 +100,7 @@ function Dashboard({
         setSaveStatus("ok");
       } else {
         setSaveStatus("error");
-        console.error("Échec d'enregistrement :", json && json.error);
+        console.error("Échec d'enregistrement :", json && json.error, json);
       }
     }).catch(err => {
       setSaveStatus("error");
@@ -435,6 +435,7 @@ Bien cordialement,`;
       color: "#2C2E2B"
     }
   }, /*#__PURE__*/React.createElement("style", null, `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
         .pf { font-family: 'Playfair Display', serif; }
         * { box-sizing: border-box; }
         button { cursor: pointer; font-family: inherit; }

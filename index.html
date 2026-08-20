@@ -22,30 +22,33 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.1.0";
 const FORMATIONS = [{
   id: "STQ",
   label: "Saint-Quentin",
   groupe: "BPJEPS Basket",
   session: "17/08/2026 → 16/08/2027",
-  seuilAlerte: 3,
-  seuilMax: 5
+  paliers: [3, 5]
 }, {
   id: "PHA",
   label: "Phalempin",
   groupe: "BPJEPS Basket",
   session: "17/08/2026 → 16/08/2027",
-  seuilAlerte: 3,
-  seuilMax: 5
+  paliers: [3, 5]
 }, {
   id: "TTBB",
   label: "TTBB",
   groupe: "Technicien Territorial Basketball",
   session: "27/08/2026 → 26/08/2027",
-  seuilAlerte: 3,
-  seuilMax: 5
+  paliers: [3, 5]
+}, {
+  id: "CPMS",
+  label: "CPMS",
+  groupe: "Chargé(e) de Promotion et Marketing Sportif",
+  session: "25/08/2026 → 01/07/2027",
+  paliers: [5, 10, 15, 20]
 }];
-const SEUIL_ALERTE_PCT_DEFAUT = 3; // seuil déclenchant le mail d'alerte, remplacé par formationConfig.seuilAlerte quand fourni
+const PALIERS_DEFAUT = [3, 5]; // remplacé par formationConfig.paliers quand fourni
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
 const STATUT_STYLE = {
@@ -107,7 +110,16 @@ function Dashboard({
   formationConfig,
   onChangeFormation
 }) {
-  const SEUIL_ALERTE_PCT = formationConfig && formationConfig.seuilAlerte || SEUIL_ALERTE_PCT_DEFAUT;
+  const PALIERS = formationConfig && formationConfig.paliers || PALIERS_DEFAUT;
+  const SEUIL_ALERTE_PCT = PALIERS[0]; // palier le plus bas — déclenche l'apparition dans la liste d'alertes
+  const SEUIL_MAX_PCT = PALIERS[PALIERS.length - 1]; // palier le plus haut — affiché en rouge critique
+  function palierAtteint(pct) {
+    let atteint = null;
+    PALIERS.forEach(p => {
+      if (pct >= p) atteint = p;
+    });
+    return atteint;
+  }
   const SLOTS = initialSlots;
   const STAGIAIRES = initialStagiaires;
   const DATES = Array.from(new Set(SLOTS.map(s => s.date))).sort();
@@ -1223,10 +1235,10 @@ Bien cordialement,`;
       borderRadius: 20,
       fontSize: 12,
       fontWeight: 600,
-      background: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#FBE9E4" : "#E9EFE6",
-      color: r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#B3502F" : "#4A6741"
+      background: r.pctAIAnnuel >= SEUIL_MAX_PCT ? "#B3502F" : r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#FBE9E4" : "#E9EFE6",
+      color: r.pctAIAnnuel >= SEUIL_MAX_PCT ? "#fff" : r.pctAIAnnuel >= SEUIL_ALERTE_PCT ? "#B3502F" : "#4A6741"
     }
-  }, r.pctAIAnnuel.toFixed(1), "%"))))))), /*#__PURE__*/React.createElement("details", {
+  }, r.pctAIAnnuel.toFixed(1), "%", palierAtteint(r.pctAIAnnuel) !== null ? ` · palier ${palierAtteint(r.pctAIAnnuel)}%` : ""))))))), /*#__PURE__*/React.createElement("details", {
     className: "no-print",
     style: {
       marginBottom: 16,
@@ -1441,7 +1453,7 @@ Bien cordialement,`;
       fontSize: 12,
       color: "#B3502F"
     }
-  }, "⚠️ ", stagiairesEnAlerte.length, " stagiaire(s) au-dessus du seuil d'alerte (", SEUIL_ALERTE_PCT, "% d'AI annuel) — voir l'onglet Notifications.")), tab === "contacts" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ ", stagiairesEnAlerte.length, " stagiaire(s) au-dessus du seuil d'alerte (", SEUIL_ALERTE_PCT, "% d'AI annuel, paliers ", PALIERS.join('/'), "%) — voir l'onglet Notifications.")), tab === "contacts" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "pf",
     style: {
       fontSize: 19,
@@ -1517,7 +1529,7 @@ Bien cordialement,`;
       marginBottom: 8,
       color: "#B3502F"
     }
-  }, "Alertes seuil (", SEUIL_ALERTE_PCT, "% d'AI annuel atteint)"), /*#__PURE__*/React.createElement("div", {
+  }, "Alertes seuil (paliers ", PALIERS.join(' / '), "%)"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -1546,7 +1558,7 @@ Bien cordialement,`;
       color: "#B3502F",
       fontWeight: 600
     }
-  }, r.pctAIAnnuel.toFixed(1), "% AI"), /*#__PURE__*/React.createElement("button", {
+  }, r.pctAIAnnuel.toFixed(1), "% AI (palier ", palierAtteint(r.pctAIAnnuel), "%)"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setPreviewMail(buildAlertMail(r)),
     style: {
       display: "flex",

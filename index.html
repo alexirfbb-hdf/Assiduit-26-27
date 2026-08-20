@@ -22,7 +22,7 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.3.0";
 const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
@@ -1963,17 +1963,14 @@ function buildInitialData(json) {
   };
 }
 function App() {
-  const [codeInput, setCodeInput] = useState("");
-  const [status, setStatus] = useState("login"); // "login" | "loading" | "ready" | "error"
+  const [status, setStatus] = useState("loading"); // "loading" | "ready" | "error"
   const [errorMsg, setErrorMsg] = useState("");
   const [data, setData] = useState(null);
-  const [token, setToken] = useState("");
   const [backendVersion, setBackendVersion] = useState("?");
-  function tryLogin(e) {
-    if (e) e.preventDefault();
+  function loadData() {
     setStatus("loading");
     setErrorMsg("");
-    fetch(`${APPS_SCRIPT_URL}?token=${encodeURIComponent(codeInput)}`).then(r => r.json()).then(json => {
+    fetch(`${APPS_SCRIPT_URL}?token=x`).then(r => r.json()).then(json => {
       if (json.error) {
         setStatus("error");
         setErrorMsg(json.error);
@@ -1981,13 +1978,15 @@ function App() {
       }
       setBackendVersion(json.version || "?");
       setData(buildInitialData(json));
-      setToken(codeInput);
       setStatus("ready");
     }).catch(err => {
       setStatus("error");
       setErrorMsg("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
     });
   }
+  useEffect(() => {
+    loadData();
+  }, []);
   if (status === "ready" && data) {
     return /*#__PURE__*/React.createElement(Dashboard, {
       initialSlots: data.slots,
@@ -1995,7 +1994,7 @@ function App() {
       initialPresences: data.presences,
       initialContacts: data.contacts,
       initialContrats: data.contrats,
-      token: token,
+      token: "x",
       backendVersion: backendVersion
     });
   }
@@ -2009,15 +2008,15 @@ function App() {
       justifyContent: "center",
       padding: 20
     }
-  }, /*#__PURE__*/React.createElement("form", {
-    onSubmit: tryLogin,
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
       borderRadius: 14,
       padding: 32,
       maxWidth: 360,
       width: "100%",
-      boxShadow: "0 4px 24px rgba(0,0,0,0.08)"
+      boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+      textAlign: "center"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2033,48 +2032,29 @@ function App() {
       color: "#8A8577",
       marginBottom: 20
     }
-  }, "IRFBB Hauts-de-France"), /*#__PURE__*/React.createElement("label", {
+  }, "IRFBB Hauts-de-France"), status === "loading" && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
-      fontWeight: 600,
-      color: "#4A4A42",
-      display: "block",
-      marginBottom: 6
+      fontSize: 13,
+      color: "#8A8577"
     }
-  }, "Code d'accès"), /*#__PURE__*/React.createElement("input", {
-    type: "password",
-    value: codeInput,
-    onChange: e => setCodeInput(e.target.value),
-    autoFocus: true,
-    style: {
-      width: "100%",
-      padding: "10px 12px",
-      borderRadius: 8,
-      border: "1px solid #E3DDD1",
-      fontSize: 14,
-      marginBottom: 14
-    }
-  }), status === "error" && /*#__PURE__*/React.createElement("div", {
+  }, "Chargement des données..."), status === "error" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: "#B3502F",
       marginBottom: 14
     }
   }, errorMsg), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    disabled: status === "loading",
+    onClick: loadData,
     style: {
-      width: "100%",
       padding: "10px 16px",
       borderRadius: 8,
       border: "none",
       background: "#3A4A35",
       color: "#fff",
       fontSize: 14,
-      fontWeight: 600,
-      opacity: status === "loading" ? 0.6 : 1
+      fontWeight: 600
     }
-  }, status === "loading" ? "Connexion..." : "Entrer"), /*#__PURE__*/React.createElement("div", {
+  }, "Réessayer")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: "#C6C2B6",

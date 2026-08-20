@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assiduité - BPJEPS Saint-Quentin</title>
+<title>Assiduité BPJEPS - IRFBB Hauts-de-France</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -22,8 +22,30 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
-const APP_VERSION = "1.4.0";
-const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
+const APP_VERSION = "2.0.0";
+const FORMATIONS = [{
+  id: "STQ",
+  label: "Saint-Quentin",
+  groupe: "BPJEPS Basket",
+  session: "17/08/2026 → 16/08/2027",
+  seuilAlerte: 3,
+  seuilMax: 5
+}, {
+  id: "PHA",
+  label: "Phalempin",
+  groupe: "BPJEPS Basket",
+  session: "17/08/2026 → 16/08/2027",
+  seuilAlerte: 3,
+  seuilMax: 5
+}, {
+  id: "TTBB",
+  label: "TTBB",
+  groupe: "Technicien Territorial Basketball",
+  session: "27/08/2026 → 26/08/2027",
+  seuilAlerte: 3,
+  seuilMax: 5
+}];
+const SEUIL_ALERTE_PCT_DEFAUT = 3; // seuil déclenchant le mail d'alerte, remplacé par formationConfig.seuilAlerte quand fourni
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
 const STATUT_STYLE = {
@@ -81,8 +103,11 @@ function Dashboard({
   initialContacts,
   initialContrats,
   token,
-  backendVersion
+  backendVersion,
+  formationConfig,
+  onChangeFormation
 }) {
+  const SEUIL_ALERTE_PCT = formationConfig && formationConfig.seuilAlerte || SEUIL_ALERTE_PCT_DEFAUT;
   const SLOTS = initialSlots;
   const STAGIAIRES = initialStagiaires;
   const DATES = Array.from(new Set(SLOTS.map(s => s.date))).sort();
@@ -398,7 +423,7 @@ Bien cordialement,`;
         </table>`;
     }).join("");
     const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
-      <title>Récapitulatif absences — BPJEPS Saint-Quentin</title>
+      <title>Récapitulatif absences — ${formationConfig.label}</title>
       <style>
         body { font-family: Arial, Helvetica, sans-serif; color: #2C2E2B; margin: 40px; }
         h1 { font-size: 20px; margin-bottom: 2px; }
@@ -416,7 +441,7 @@ Bien cordialement,`;
         @media print { body { margin: 15mm; } }
       </style></head>
       <body>
-        <h1>Récapitulatif des absences — BPJEPS Saint-Quentin</h1>
+        <h1>Récapitulatif des absences — ${formationConfig.label}</h1>
         <div class="subtitle">Période du ${formatDateShort(rangeFrom)}/${rangeFrom.slice(0, 4)} au ${formatDateShort(rangeTo)}/${rangeTo.slice(0, 4)} — édité le ${new Date().toLocaleDateString("fr-FR")}</div>
         ${rows || '<p class="empty">Aucun stagiaire sélectionné.</p>'}
       </body></html>`;
@@ -426,7 +451,7 @@ Bien cordialement,`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `recap-absences-${rangeFrom}_${rangeTo}.html`;
+    a.download = `recap-absences-${formationConfig.id}-${rangeFrom}_${rangeTo}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -474,13 +499,36 @@ Bien cordialement,`;
       fontSize: 24,
       fontWeight: 700
     }
-  }, "Assiduité - BPJEPS Saint-Quentin"), /*#__PURE__*/React.createElement("div", {
+  }, "Assiduité — ", formationConfig.groupe), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexWrap: "wrap",
+      margin: "10px 0"
+    }
+  }, FORMATIONS.map(f => {
+    const active = f.id === formationConfig.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: f.id,
+      onClick: () => onChangeFormation(f.id),
+      style: {
+        padding: "6px 14px",
+        borderRadius: 20,
+        fontSize: 13,
+        fontWeight: 500,
+        border: "none",
+        cursor: "pointer",
+        background: active ? "#F7F5F0" : "rgba(247,245,240,0.12)",
+        color: active ? "#3A4A35" : "#F7F5F0"
+      }
+    }, f.label);
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       opacity: 0.75,
       marginTop: 4
     }
-  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"), /*#__PURE__*/React.createElement("div", {
+  }, "Session ", formationConfig.session, " · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       opacity: 0.5,
@@ -1983,10 +2031,11 @@ function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [data, setData] = useState(null);
   const [backendVersion, setBackendVersion] = useState("?");
-  function loadData() {
+  const [formationId, setFormationId] = useState("STQ");
+  function loadData(formation) {
     setStatus("loading");
     setErrorMsg("");
-    fetch(`${APPS_SCRIPT_URL}?token=x`).then(r => r.json()).then(json => {
+    fetch(`${APPS_SCRIPT_URL}?token=x&formation=${formation}`).then(r => r.json()).then(json => {
       if (json.error) {
         setStatus("error");
         setErrorMsg(json.error);
@@ -2001,17 +2050,21 @@ function App() {
     });
   }
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(formationId);
+  }, [formationId]);
+  const formationConfig = FORMATIONS.find(f => f.id === formationId) || FORMATIONS[0];
   if (status === "ready" && data) {
     return /*#__PURE__*/React.createElement(Dashboard, {
+      key: formationId,
       initialSlots: data.slots,
       initialStagiaires: data.stagiaires,
       initialPresences: data.presences,
       initialContacts: data.contacts,
       initialContrats: data.contrats,
       token: "x",
-      backendVersion: backendVersion
+      backendVersion: backendVersion,
+      formationConfig: formationConfig,
+      onChangeFormation: setFormationId
     });
   }
   return /*#__PURE__*/React.createElement("div", {
@@ -2042,7 +2095,7 @@ function App() {
       color: "#3A4A35",
       marginBottom: 4
     }
-  }, "Assiduité - BPJEPS Saint-Quentin"), /*#__PURE__*/React.createElement("div", {
+  }, "Assiduité — ", formationConfig.groupe), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: "#8A8577",
@@ -2060,7 +2113,7 @@ function App() {
       marginBottom: 14
     }
   }, errorMsg), /*#__PURE__*/React.createElement("button", {
-    onClick: loadData,
+    onClick: () => loadData(formationId),
     style: {
       padding: "10px 16px",
       borderRadius: 8,

@@ -22,7 +22,7 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
@@ -228,6 +228,7 @@ function Dashboard({
   // Récapitulatif : % AI = heures AI / heures prévues pour CE stagiaire, sur la durée réelle de son contrat
   // (de sa date d'entrée à sa date de fin si renseignée) — pas un dénominateur fixe de 600h,
   // pour ne pas pénaliser un stagiaire arrivé en cours de route ou parti avant la fin.
+  const todayISO = new Date().toISOString().slice(0, 10);
   const recap = useMemo(() => {
     return STAGIAIRES.map(st => {
       const contrat = contrats[st.id] || {
@@ -240,12 +241,14 @@ function Dashboard({
         heuresAIPeriode = 0,
         heuresArretPeriode = 0;
       let heuresPrevuesContrat = 0,
-        heuresAIContrat = 0;
+        heuresAIContrat = 0,
+        heuresEcoulees = 0;
       let dernierAbsenceAI = null;
       SLOTS.forEach(slot => {
         if (!dansContrat(slot.date)) return;
         const statut = getEntry(st.id, slot.date, slot.creneau).statut;
         heuresPrevuesContrat += slot.heures;
+        if (slot.date <= todayISO) heuresEcoulees += slot.heures; // présent + absent, toute heure déjà passée compte
         if (statut === "Absent AI") {
           heuresAIContrat += slot.heures;
           if (!dernierAbsenceAI || slot.date > dernierAbsenceAI) dernierAbsenceAI = slot.date;
@@ -255,6 +258,7 @@ function Dashboard({
         if (statut === "Absent AJ") heuresAJPeriode += slot.heures;else if (statut === "Absent AI") heuresAIPeriode += slot.heures;else if (statut === "Arrêt de travail") heuresArretPeriode += slot.heures;
       });
       const pctAIAnnuel = heuresPrevuesContrat > 0 ? heuresAIContrat / heuresPrevuesContrat * 100 : 0;
+      const pctProgression = TOTAL_HEURES_ANNUELLES > 0 ? heuresEcoulees / TOTAL_HEURES_ANNUELLES * 100 : 0;
       return {
         ...st,
         heuresPrevuesPeriode,
@@ -265,10 +269,12 @@ function Dashboard({
         heuresPrevuesContrat,
         heuresAIContrat,
         pctAIAnnuel,
-        dernierAbsenceAI
+        dernierAbsenceAI,
+        heuresEcoulees,
+        pctProgression
       };
     });
-  }, [presences, rangeFrom, rangeTo, contrats]);
+  }, [presences, rangeFrom, rangeTo, contrats, todayISO]);
 
   // Détail des dates d'absence par stagiaire, sur la période sélectionnée — c'est ce qui intéresse l'employeur
   const detailAbsences = useMemo(() => {
@@ -1115,7 +1121,7 @@ Bien cordialement,`;
       background: "#3A4A35",
       color: "#fff"
     }
-  }, ["Stagiaire", "Heures période", "AJ (période)", "AI (période)", "Arrêt (période)", "% AI (sur son contrat)"].map(h => /*#__PURE__*/React.createElement("th", {
+  }, ["Stagiaire", "Heures écoulées / 600h", "Heures période", "AJ (période)", "AI (période)", "Arrêt (période)", "% AI (sur son contrat)"].map(h => /*#__PURE__*/React.createElement("th", {
     key: h,
     style: {
       padding: "10px 12px",
@@ -1134,6 +1140,16 @@ Bien cordialement,`;
       fontWeight: 500
     }
   }, r.nom, " ", r.prenom), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px"
+    }
+  }, r.heuresEcoulees, "h / ", TOTAL_HEURES_ANNUELLES, "h", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#8A8577",
+      marginLeft: 6,
+      fontSize: 12
+    }
+  }, "(", r.pctProgression.toFixed(1), "%)")), /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "10px 12px"
     }

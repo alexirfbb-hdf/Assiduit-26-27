@@ -22,6 +22,7 @@ const {
   useRef
 } = React;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuX7Hp0ACwkWBd7EUTJ39HDzAGB6c_KZVTILd0h85RPGezkrqYoW4ediTYkiVLHOdy/exec";
+const APP_VERSION = "1.2.0";
 const SEUIL_ALERTE_PCT = 3; // seuil déclenchant le mail d'alerte
 
 const STATUTS = ["Présent", "Absent AJ", "Absent AI", "Arrêt de travail"];
@@ -79,7 +80,8 @@ function Dashboard({
   initialPresences,
   initialContacts,
   initialContrats,
-  token
+  token,
+  backendVersion
 }) {
   const SLOTS = initialSlots;
   const STAGIAIRES = initialStagiaires;
@@ -471,7 +473,13 @@ Bien cordialement,`;
       opacity: 0.75,
       marginTop: 4
     }
-  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"), saveStatus && /*#__PURE__*/React.createElement("div", {
+  }, "Session 17/08/2026 → 16/08/2027 · ", TOTAL_HEURES_ANNUELLES, "h de formation · ", STAGIAIRES.length, " stagiaires"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      opacity: 0.5,
+      marginTop: 4
+    }
+  }, "App v", APP_VERSION, " · Backend v", backendVersion), saveStatus && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "absolute",
       top: 16,
@@ -1959,6 +1967,7 @@ function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [data, setData] = useState(null);
   const [token, setToken] = useState("");
+  const [backendVersion, setBackendVersion] = useState("?");
   function tryLogin(e) {
     if (e) e.preventDefault();
     setStatus("loading");
@@ -1969,6 +1978,7 @@ function App() {
         setErrorMsg(json.error);
         return;
       }
+      setBackendVersion(json.version || "?");
       setData(buildInitialData(json));
       setToken(codeInput);
       setStatus("ready");
@@ -1984,7 +1994,8 @@ function App() {
       initialPresences: data.presences,
       initialContacts: data.contacts,
       initialContrats: data.contrats,
-      token: token
+      token: token,
+      backendVersion: backendVersion
     });
   }
   return /*#__PURE__*/React.createElement("div", {
@@ -1997,7 +2008,7 @@ function App() {
       justifyContent: "center",
       padding: 20
     }
-  }, /*#__PURE__*/React.createElement("style", null, ``), /*#__PURE__*/React.createElement("form", {
+  }, /*#__PURE__*/React.createElement("form", {
     onSubmit: tryLogin,
     style: {
       background: "#fff",
@@ -2062,7 +2073,14 @@ function App() {
       fontWeight: 600,
       opacity: status === "loading" ? 0.6 : 1
     }
-  }, status === "loading" ? "Connexion..." : "Entrer")));
+  }, status === "loading" ? "Connexion..." : "Entrer"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: "#C6C2B6",
+      textAlign: "center",
+      marginTop: 16
+    }
+  }, "App v", APP_VERSION)));
 }
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(/*#__PURE__*/React.createElement(App, null));
